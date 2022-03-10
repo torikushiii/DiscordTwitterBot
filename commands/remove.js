@@ -19,6 +19,9 @@ exports.run = async message => {
     if (!username) {
         return message.reply("You must specify a username.");
     }
+    else if (!username.includes("@") && username !== "all") {
+        return message.reply("The username must be starts with @. Example: @username");
+    }
 
     if (username === "all") {
         delete data[message.guild.id];
@@ -29,7 +32,7 @@ exports.run = async message => {
 
     const guild = data[message.guild.id];
     for (const channel of guild.channels) {
-        if (channel.name.toLowerCase() === username.toLowerCase()) {
+        if (channel.name.toLowerCase() === username.substring(1).toLowerCase()) {
             guild.channels.pop(channel);
             
             data[message.guild.id] = guild;
