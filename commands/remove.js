@@ -5,7 +5,7 @@ exports.example = `${process.env.PREFIX}remove @username|all (to remove all acco
 
 exports.run = async message => {
     const fs = require("fs");
-    const data = JSON.parse(fs.readFileSync("./src/json/twitter.json", "utf8"));
+    const data = client.stream.getData();
 
     if (message.args.length === 0) {
         return message.reply(`Usage: ${this.example}`);

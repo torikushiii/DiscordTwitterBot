@@ -85,11 +85,19 @@ module.exports = class Stream {
                 for (const channel of guilds[guild].channels) {
                     if (channel.tid === tweet.user.id_str) {
                         const { embed, text } = this.buildEmbed(tweet, guilds[guild]);
+                        const sendObject = {
+                            content: "",
+                        };
 
-                        client.channels.cache.get(channel.id).send({
-                            content: `${(guilds[guild].showurl) ? text : ""}`,
-                            embeds: embed
-                        });
+                        if (guilds[guild].showurl) {
+                            sendObject.content = text
+                        }
+
+                        if (guilds[guild].type === 0) {
+                            sendObject.embeds = embed
+                        }
+
+                        client.channels.cache.get(channel.id).send(sendObject);
                     }
                 }
             }
@@ -256,5 +264,9 @@ module.exports = class Stream {
         }
 
         return this.#data;
+    }
+
+    getData () {
+        return this.#data.guilds;
     }
 }

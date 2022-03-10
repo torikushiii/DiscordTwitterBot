@@ -1,8 +1,8 @@
 exports.description = "Add an Twitter account to track to your server.";
 exports.perms = "ADMINISTRATOR";
-exports.usage = "<twitter_username> <channel_id>/<channel_tag> [type] (0: Twitter, 1: FxTwitter, 2: Nitter) (default: 0 if not specified)";
+exports.usage = "<twitter_username> <channel_id>/<channel_tag> <type> (0: Twitter, 1: FxTwitter, 2: Nitter) (default: 0 if not specified)";
 exports.example = `${process.env.PREFIX}add @username (85984654635498465|#channel)`
-+"\n$add @username (85984654635498465|#channel) type:0"
++`\n${process.env.PREFIX}add @username (85984654635498465|#channel) type:0`;
 
 exports.run = async message => {
     const fs = require("fs");
@@ -11,11 +11,11 @@ exports.run = async message => {
     }
 
     let username = message.args[0];
-    const type = message.args[2] ? message.args[2].split(":")[1] : 0;
+    const type = message.args[2] ? Number(message.args[2].split(":")[1]) : 0;
     if (username.startsWith("@")) {
         const res = await client.twitter.getAccount(username.substring(1), false);
         if (res.statusCode === 200 && res.body) {
-            const data = JSON.parse(fs.readFileSync("./src/json/twitter.json", "utf8"));
+            const data = client.stream.getData();
             const guild = data[message.guild.id];
             if (guild) {
                 for (const channel of guild.channels) {
