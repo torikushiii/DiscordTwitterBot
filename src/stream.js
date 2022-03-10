@@ -135,7 +135,7 @@ module.exports = class Stream {
             }
             else if (tweet?.extended_tweet?.extended_entities?.media?.length > 1) {
                 const urls = [];
-                for (const media of tweet.extended_entities.media) {
+                for (const media of tweet.extended_tweet.extended_entities.media) {
                     urls.push({
                         url: "https://twitter.com",
                         image: {
