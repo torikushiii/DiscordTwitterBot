@@ -13,7 +13,7 @@ exports.run = async message => {
     let type = null;
     for (let i = 0; i < message.args.length; i++) {
         const token = message.args[i];
-        if (/^type:[1-2]$/gm.test(token)) {
+        if (/^type:[0-2]$/gm.test(token)) {
             type = token.split(":")[1];
             message.args.splice(i, 1);
             break;
@@ -50,7 +50,7 @@ exports.run = async message => {
     }
     else {
         if (type) {
-            guild.type = type;
+            guild.type = Number(type);
         }
         
         if (showurl) {
