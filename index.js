@@ -1,6 +1,5 @@
 (async function () {
     const Discord = require("discord.js");
-    globalThis.cache = new Map();
     globalThis.client = new Discord.Client({
         intents: [
             "GUILDS",
@@ -15,6 +14,7 @@
         require("./src/loader").events();
         client.commands = require("./src/loader").commands();
         client.twitter = require("./src/twitter");
+        client.cache = new Map();
         await client.login(process.env.DISCORD_TOKEN).catch(err => {
             console.error("[ERROR] An error occured while logging in to Discord:", err, {
                 origin: "index.js",
