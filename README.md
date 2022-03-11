@@ -1,7 +1,7 @@
 # DiscordTwitterBot
 
 I'm a Discord bot that post tweet to your specified channel
-This bot will fetch Twitter posts or retweets in real time and link the to Discord.
+This bot will fetch Twitter posts or retweets in real time and link it the to Discord.
 
 This bot will build the embed itself to prevent Discord from not auto-generating the embed themself sometimes.
 
@@ -15,7 +15,7 @@ This bot will build the embed itself to prevent Discord from not auto-generating
 
 # Documentation, commands
 
-`Default Prefix: $ (You can change this in config.js)`
+> Default Prefix: $ (You can change this in config.js. Customizable prefix soon!)
 - {PREFIX}add `This will add a Twitter user account to your guild`
     - $add @username #channel-tag
     - $add @username [channel-id] E.g: 267661563748951744
