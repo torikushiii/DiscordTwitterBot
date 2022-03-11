@@ -1,8 +1,0 @@
-{
-    "guildid": {
-        "type": 0, // 0 = twitter, 1 = fxtwitter, 2 = nitter
-        "showurl": true,
-        "name": "Guild Name",
-        "channels": []
-    }
-}
