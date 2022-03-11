@@ -5,8 +5,10 @@
   "description": "A simple Twitter bot that post tweets to Discord",
   "license": "AGPL-3.0",
   "dependencies": {
+    "chalk": "4.1.2",
     "discord.js": "^13.6.0",
     "got": "11.8.3",
+    "mongodb": "^4.4.1",
     "twit": "^2.2.11"
   },
   "engines": {
