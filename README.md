@@ -21,7 +21,7 @@ If you wanna add Twitter Bot to your Discord server, you can just click [this li
 - {PREFIX}add `This will add a Twitter user account to your guild`
     - $add @username #channel-tag E.g: #twitter-feed
     - $add @username [channel-id] E.g: 267661563748951744
-    - $add batch @username @username1 @username2 [channel-id] #TBA
+    - $add batch @username @username1 @username2 [channel-id]
 
 - {PREFIX}help `This will list a list of all commands and show the help message`
     - $help
