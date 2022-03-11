@@ -267,4 +267,8 @@ module.exports = class Stream {
     getData () {
         return this.#data.guilds;
     }
+
+    getUsers () {
+        return this.#data.track;
+    }
 }
