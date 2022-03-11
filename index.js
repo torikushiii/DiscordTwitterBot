@@ -10,6 +10,7 @@
     });
 
     require("./config");
+    await require("./src/components")();
     try {
         require("./src/loader").events();
         client.commands = require("./src/loader").commands();

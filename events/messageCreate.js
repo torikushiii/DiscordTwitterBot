@@ -38,7 +38,7 @@ module.exports = async message => {
         }
     }
     catch (e) {
-        console.log("!!! INSANE MESSAGE EVENT ERROR !!!");
+        console.log("Message Event Error:");
         console.trace(e);
     }
 }
