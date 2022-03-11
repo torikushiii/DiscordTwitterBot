@@ -5,7 +5,6 @@ exports.example = `${process.env.PREFIX}set type:1`
 +`\n${process.env.PREFIX}set type:2 showurl:false`;
 
 exports.run = async message => {
-    const fs = require("fs");
     if (message.args.length === 0) {
         return message.reply(`Usage: ${this.usage}`);
     }
@@ -34,8 +33,10 @@ exports.run = async message => {
         return message.reply(`Usage: ${this.usage}`);
     }
 
-    const data = client.stream.getData();
-    const guild = data[message.guild.id];
+    const guild = await client.query.findOne("twitter", "guilds", { id: message.guild.id });
+    if (!guild) {
+        return message.reply("This server has not been added to the list.");
+    }
 
     if (guild.type !== 0 && showurl === false) {
         return message.reply("You can't set `showurl` to false if type is not 0 (Twitter).");
@@ -45,20 +46,18 @@ exports.run = async message => {
         return message.reply("Nothing changed.");
     }
 
-    if (!guild) {
-        return message.reply("This server is not on the list yet.");
+    if (type) {
+        guild.type = Number(type);
     }
-    else {
-        if (type) {
-            guild.type = Number(type);
-        }
-        
-        if (showurl) {
-            guild.showurl = showurl === "true";
-        }
+    
+    if (showurl) {
+        guild.showurl = true;
+    }
+    else if (showurl === false) {
+        guild.showurl = false;
+    }
 
-        fs.writeFileSync("./src/json/twitter.json", JSON.stringify(data, null, 4), "utf8");
-        client.stream.restart();
-        return message.reply("Successfully changed the settings.");
-    }
+    client.query.replaceOne("twitter", "guilds", { id: message.guild.id }, guild);
+    client.stream.restart();
+    return message.reply("Successfully changed the settings.");
 }

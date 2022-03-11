@@ -4,14 +4,12 @@ exports.usage = "<twitter_username>";
 exports.example = `${process.env.PREFIX}remove @username|all (to remove all accounts)`;
 
 exports.run = async message => {
-    const fs = require("fs");
-    const data = client.stream.getData();
-
     if (message.args.length === 0) {
         return message.reply(`Usage: ${this.example}`);
     }
-
-    if (!data[message.guild.id]) {
+    
+    const data = await client.query.findOne("twitter", "guilds", { id: message.guild.id });
+    if (!data) {
         return message.reply("You don't have any accounts added yet.");
     }
 
@@ -24,21 +22,18 @@ exports.run = async message => {
     }
 
     if (username === "all") {
-        delete data[message.guild.id];
-        fs.writeFileSync("./src/json/twitter.json", JSON.stringify(data, null, 4), "utf8");
+        client.query.deleteOne("twitter", "guilds", { id: message.guild.id });
         client.stream.restart();
-        return message.reply("All accounts removed.");
+        return message.reply("Successfully removed all accounts.");
     }
 
-    const guild = data[message.guild.id];
-    for (const channel of guild.channels) {
+    for (const channel of data.channels) {
         if (channel.name.toLowerCase() === username.substring(1).toLowerCase()) {
-            guild.channels.pop(channel);
-            
-            data[message.guild.id] = guild;
-            fs.writeFileSync("./src/json/twitter.json", JSON.stringify(data, null, 4), "utf8");
+            data.channels.pop(channel);
+            client.query.replaceOne("twitter", "guilds", { id: message.guild.id }, data);
             client.stream.restart();
-            return message.reply(`Successfully removed **${channel.name}** from the the list.`);
+            
+            return message.reply(`Successfully removed **${channel.name}** from the list.`);
         }
     }
 

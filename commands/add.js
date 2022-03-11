@@ -4,7 +4,6 @@ exports.usage = "<twitter_username> <channel_id>/<channel_tag>";
 exports.example = `${process.env.PREFIX}add @username (85984654635498465|#channel)`;
 
 exports.run = async message => {
-    const fs = require("fs");
     if (message.args.length === 0) {
         return message.reply(`Usage: ${this.usage}`);
     }
@@ -23,8 +22,7 @@ exports.run = async message => {
         }
 
         if (res.statusCode === 200 && res.body) {
-            const data = client.stream.getData();
-            const guild = data[message.guild.id];
+            const guild = await client.query.findOne("twitter", "guilds", { id: message.guild.id });
             if (guild) {
                 for (const channel of guild.channels) {
                     if (channel.tid === res.body.id) {
@@ -45,9 +43,8 @@ exports.run = async message => {
                 });
 
                 client.cache.set((res.body.username).toLowerCase(), res.body);
-                fs.writeFileSync("./src/json/twitter.json", JSON.stringify(data, null, 4), "utf8");
+                client.query.replaceOne("twitter", "guilds", { id: message.guild.id }, guild);
                 client.stream.restart();
-                console.log(client.cache)
                 return message.reply(`Successfully added **${res.body.username}** to the list.`);
             }
             else {
@@ -60,6 +57,7 @@ exports.run = async message => {
                 const template = {
                     type: 0,
                     showurl: true,
+                    id: message.guild.id,
                     name: message.guild.name,
                     channels: [
                         {
@@ -71,8 +69,7 @@ exports.run = async message => {
                 }
 
                 client.cache.set((res.body.username).toLowerCase(), res.body);
-                data[message.guild.id] = template;
-                fs.writeFileSync("./src/json/twitter.json", JSON.stringify(data, null, 4), "utf8");
+                client.query.insertOne("twitter", "guilds", template);
                 client.stream.restart();
                 return message.reply(`Successfully added **${res.body.username}** to the tracking list.`);
             }
