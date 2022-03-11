@@ -1,4 +1,3 @@
-const fs = require("fs");
 const Twitter = require("twit");
 
 module.exports = class Stream {
@@ -17,7 +16,7 @@ module.exports = class Stream {
     /**
      * @returns {Stream}
      */
-    static twitter () {
+    static stream () {
         if (!Stream.module) {
             Stream.module = new Stream();
         }
@@ -39,13 +38,13 @@ module.exports = class Stream {
         this.connect();
     }
 
-    connect () {
+    async connect () {
         if (this.#active) {
-            return console.warn("[WARN] Stream is already active.");
+            return client.logger.log("Stream is already active.", "warn");
         }
         else if (this.#server) {
             this.#active = true;
-            this.stream(this.loadData());
+            this.stream(await this.loadData());
         }
         
         this.#server = new Twitter({
@@ -56,15 +55,15 @@ module.exports = class Stream {
         });
 
         this.#active = true;
-        this.stream(this.loadData());
+        this.stream(await this.loadData());
     }
 
     disconnect () {
         if (!this.#active) {
-            return console.warn("[WARN] Stream is not active.");
+            return client.logger.log("Stream is not active.", "warn");
         }
         else if (!this.#server) {
-            return console.warn("[WARN] Stream is not connected.");
+            return client.logger.log("Stream is not connected.", "warn");
         }
 
         this.#stream.stop();
@@ -77,8 +76,8 @@ module.exports = class Stream {
     stream (data) {
         const guilds = data.guilds;
         this.#stream = this.#server.stream("statuses/filter", { follow: data.track });
-        this.#stream.on("connected", () => console.log("[INFO] Connected to Twitter."));
-        this.#stream.on("reconnect", () => console.log("[INFO] Reconnected to Twitter."));
+        this.#stream.on("connected", () => client.logger.log("Connected to Twitter.", "info"));
+        this.#stream.on("reconnect", () => client.logger.log("Reconnected to Twitter.", "info"));
         this.#stream.on("disconnect", () => this.disconnected());
         this.#stream.on("tweet", async tweet => {
             for (const guild of Object.keys(guilds)) {
@@ -218,7 +217,7 @@ module.exports = class Stream {
     }
 
     restart () {
-        console.log("[INFO] Restarting stream...");
+        client.logger.log("Restarting stream...", "info");
         
         this.#stream.stop();
         this.#stream = null;
@@ -230,8 +229,8 @@ module.exports = class Stream {
     }
 
     disconnected () {
-        console.log("[INFO] Disconnected from Twitter.");
-        console.log("[INFO] Reconnecting...");
+        client.logger.log("Disconnected from Twitter.", "info");
+        client.logger.log("Reconnecting...", "info");
 
         this.#stream.stop();
         this.#server = null;
@@ -241,16 +240,15 @@ module.exports = class Stream {
         this.connect();
     }
 
-    loadData () {
+    async loadData () {
         if (!this.#active) {
-            return console.warn("[WARN] Stream is not active.");
+            return client.logger.log("Stream is not active.", "warn");
         }
         else if (!this.#server) {
-            return console.warn("[WARN] Stream is not connected.");
+            return client.logger.log("Server is not active.", "warn");
         }
 
-        // TODO: Load data from database instead of JSON file for future updates.
-        const guilds = JSON.parse(fs.readFileSync("./src/json/twitter.json", "utf8"));
+        const guilds = await client.query.find("twitter", "guilds");
         const ids = [];
         for (const guild of Object.keys(guilds)) {
             for (const channel of guilds[guild].channels) {
@@ -260,7 +258,7 @@ module.exports = class Stream {
 
         this.#data = {
             guilds,
-            track: [...new Set(ids)] // Fail-safe to prevent duplicates.
+            track: [...new Set(ids)]
         }
 
         return this.#data;
