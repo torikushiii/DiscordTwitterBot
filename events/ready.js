@@ -1,5 +1,5 @@
 module.exports = () => {
-    console.log(`[INFO] Bot connected to ${client.guilds.cache.size} guilds with ${client.users.cache.size} users.`);
+    client.logger.log(`Bot connected to ${client.guilds.cache.size} guilds with ${client.users.cache.size} users.`, "info");
     client.user.setPresence({
         status: "online",
         activities: [
@@ -9,8 +9,4 @@ module.exports = () => {
             }
         ]
     });
-
-    // TODO: !!! MOVE THIS !!!
-    const Component = require("../src/stream");
-    client.stream = Component.twitter();
 }
