@@ -15,9 +15,11 @@ This bot will build the embed itself to prevent Discord from not auto-generating
 
 # Documentation, commands
 
+If you wanna add Twitter Bot to your Discord server, you can just click [this link](https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456)
+
 > Default Prefix: $ (You can change this in config.js. Customizable prefix soon!)
 - {PREFIX}add `This will add a Twitter user account to your guild`
-    - $add @username #channel-tag
+    - $add @username #channel-tag E.g: #twitter-feed
     - $add @username [channel-id] E.g: 267661563748951744
     - $add batch @username @username1 @username2 [channel-id] #TBA
 
@@ -36,8 +38,8 @@ This bot will build the embed itself to prevent Discord from not auto-generating
         - 1: fxtwitter
         - 2: Nitter
 
-    - $set showurl:false (This will not send original Twitter link to the channel. Only for Twitter  links!)
     - $set showurl true or false
+    - $set showurl:false (This will not send original Twitter link to the channel. Only for Twitter  links!)
 
 # Hosting Your Own Instance
 
