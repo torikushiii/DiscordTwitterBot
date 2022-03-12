@@ -83,20 +83,38 @@ module.exports = class Stream {
             for (const guild of Object.keys(guilds)) {
                 for (const channel of guilds[guild].channels) {
                     if (channel.tid === tweet.user.id_str) {
-                        const { embed, text } = this.buildEmbed(tweet, guilds[guild]);
-                        const sendObject = {
-                            content: "",
-                        };
+                        client.logger.log(`Processing ${tweet.id_str} for ${guilds[guild].id}`, "info");
+                        try {
+                            const { embed, text } = this.buildEmbed(tweet, guilds[guild]);
+                            const sendObject = {
+                                content: "",
+                            };
 
-                        if (guilds[guild].showurl) {
-                            sendObject.content = text
+                            if (guilds[guild].showurl) {
+                                sendObject.content = text
+                            }
+
+                            if (guilds[guild].type === 0) {
+                                sendObject.embeds = embed
+                            }
+
+                            client.channels.cache.get(channel.id).send(sendObject);
+                        }
+                        catch (e) {
+                            client.logger.log(`Failed to process ${tweet.id_str} for ${guilds[guild].id}`, "error");
+                            console.error(e, {
+                                origin: "stream.js",
+                                context: {
+                                    cause: "Failed to process tweet/send message to channel",
+                                    id: guilds[guild].id,
+                                    name: guilds[guild].name,
+                                    tweet: tweet.id_str,
+                                    channel: channel.id,
+                                }
+                            })
                         }
 
-                        if (guilds[guild].type === 0) {
-                            sendObject.embeds = embed
-                        }
-
-                        client.channels.cache.get(channel.id).send(sendObject);
+                        client.logger.log(`Processed ${tweet.id_str} for ${guilds[guild].id}`, "info");
                     }
                 }
             }
