@@ -4,27 +4,6 @@ exports.usage = "";
 exports.example = "";
 
 exports.run = async message => {
-    let upMsg = "";
-    const uptime = process.uptime();
-    const days = Math.floor(uptime / 86400);
-    if (days > 0) {
-        upMsg += `${days} day${days > 1 ? "s" : ""}`;
-    }
-    const hours = Math.floor(uptime / 3600);
-    if (hours > 0) {
-        upMsg += `${upMsg ? ", " : ""}${hours} hour${hours > 1 ? "s" : ""}`;
-    }
-
-    const minutes = Math.floor(uptime / 60);
-    if (minutes > 0) {
-        upMsg += `${upMsg ? ", " : ""}${minutes} minute${minutes > 1 ? "s" : ""}`;
-    }
-
-    const seconds = Math.floor(uptime % 60);
-    if (seconds > 0) {
-        upMsg += `${upMsg ? ", " : ""}${seconds} second${seconds > 1 ? "s" : ""}`;
-    }
-
     const msg = await message.reply("Pinging...");
     const embed = {
         color: 0x0099FF,
@@ -36,7 +15,7 @@ exports.run = async message => {
             },
             {
                 name: "Uptime",
-                value: upMsg,
+                value: `**${this.staticData.getUptime(client.uptime, 3)}**`,
                 inline: false
             },
             {
@@ -54,4 +33,27 @@ exports.run = async message => {
 
     await msg.delete();
     return message.reply({ embeds: [embed] });
+}
+
+exports.staticData = {
+    getUptime: (n, ln) => {
+        n = parseInt(n);
+
+        const str = [];
+        if (n >= 1000 * 60 * 60 * 24 * 365) cut(1000 * 60 * 60 * 24 * 365, "y");
+        if (n >= 1000 * 60 * 60 * 24) cut(1000 * 60 * 60 * 24, "d");
+        if (n >= 1000 * 60 * 60) cut(1000 * 60 * 60, "h");
+        if (n >= 1000 * 60) cut(1000 * 60, "m");
+        if (n >= 1000) cut(1000, "s");
+        if (!str.length && n < 1000) {
+            cut(1, "ms");
+        }
+
+        function cut (v, c) {
+            str.push(Math.floor(n / v) + c);
+            n = n % v;
+        }
+
+        return str.slice(0, ln || 420).join(" ");
+    }
 }
