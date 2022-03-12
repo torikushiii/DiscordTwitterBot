@@ -26,13 +26,12 @@ exports.run = async message => {
         let res;
         const list = [];
         const failed = [];
-        const userList = message.args.filter(user => user.startsWith("@"));
-        const users = [...new Set(userList)];
-        if (users.length > 10) {
+        const userList = [...new Set(message.args.slice(1))];
+        if (userList.length > 10) {
             return message.reply("You can only add up to 10 users at a time.");
         }
         
-        for (const user of users) {
+        for (const user of userList) {
             const account = user.replace("@", "");
             if (client.cache.get((account).toLowerCase())) {
                 res = {
@@ -81,12 +80,12 @@ exports.run = async message => {
                     fields: [
                         {
                             name: "Added",
-                            value: list.map(i => `${i.name}`).join(" | "),
+                            value: list.map(i => `${i.name}`).join(", "),
                             inline: false
                         },
                         {
                             name: "Failed",
-                            value: failed.join(" | "),
+                            value: (failed.length > 0) ? failed.join(", ") : "None",
                             inline: false
                         }
                     ],
@@ -100,7 +99,7 @@ exports.run = async message => {
                 return message.reply({ embeds: [embed] });
             }
             else {
-                return message.reply(`No accounts were added because either accounts does not exists or you input an invalid account. (Failed: ${failed.join(" | ")})`);
+                return message.reply(`No accounts were added because either accounts does not exists or you input an invalid account. (Failed: ${failed.join(", ")})`);
             }
         }
 
@@ -127,12 +126,12 @@ exports.run = async message => {
                 fields: [
                     {
                         name: "Added",
-                        value: list.map(i => `${i.name}`).join(" | "),
+                        value: list.map(i => `${i.name}`).join(", "),
                         inline: false
                     },
                     {
                         name: "Failed",
-                        value: failed.join(" | "),
+                        value: (failed.length > 0) ? failed.join(", ") : "None",
                         inline: false
                     }
                 ],
@@ -152,15 +151,16 @@ exports.run = async message => {
 
     let res;
     let username = message.args[0];
-    if (username.startsWith("@")) {
-        if (client.cache.get((username.substring(1)).toLowerCase())) {
+    if (username) {
+        username = username.replace("@", "");
+        if (client.cache.get((username).toLowerCase())) {
             res = {
                 statusCode: 200,
-                body: client.cache.get((username.substring(1)).toLowerCase())
+                body: client.cache.get((username).toLowerCase())
             }
         }
         else {
-            res = await client.twitter.getAccount(username.substring(1));
+            res = await client.twitter.getAccount(username);
         }
 
         if (res.statusCode === 200 && res.body) {
@@ -226,8 +226,5 @@ exports.run = async message => {
         else {
             return message.reply("Invalid username.");
         }
-    }
-    else {
-        return message.reply("The username must start with @.");
     }
 }
