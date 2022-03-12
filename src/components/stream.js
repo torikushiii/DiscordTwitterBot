@@ -83,7 +83,7 @@ module.exports = class Stream {
             for (const guild of Object.keys(guilds)) {
                 for (const channel of guilds[guild].channels) {
                     if (channel.tid === tweet.user.id_str) {
-                        client.logger.log(`Processing ${tweet.id_str} for ${guilds[guild].id}`, "info");
+                        client.logger.log(`Processing ${tweet.id_str} for ${guilds[guild].id} [${guilds[guild].name}]`, "info");
                         try {
                             const { embed, text } = this.buildEmbed(tweet, guilds[guild]);
                             const sendObject = {
@@ -98,7 +98,24 @@ module.exports = class Stream {
                                 sendObject.embeds = embed
                             }
 
-                            client.channels.cache.get(channel.id).send(sendObject);
+                            try {
+                                client.logger.log(`Sending to ${guilds[guild].id} [${guilds[guild].name}]`, "info");
+                                client.channels.cache.get(channel.id).send(sendObject);
+                                client.logger.log(`Sended to ${guilds[guild].id} [${guilds[guild].name}]`, "info");
+                            }
+                            catch (e) {
+                                client.logger.log(`Failed to send to ${guilds[guild].id} [${guilds[guild].name}]`, "error");
+                                console.error(e, {
+                                    origin: "stream.js",
+                                    context: {
+                                        cause: "Failed to send tweet to channel",
+                                        id: guilds[guild].id,
+                                        name: guilds[guild].name,
+                                        tweet: tweet.id_str,
+                                        channel: channel.id
+                                    }
+                                })
+                            }
                         }
                         catch (e) {
                             client.logger.log(`Failed to process ${tweet.id_str} for ${guilds[guild].id}`, "error");
@@ -114,7 +131,7 @@ module.exports = class Stream {
                             })
                         }
 
-                        client.logger.log(`Processed ${tweet.id_str} for ${guilds[guild].id}`, "info");
+                        client.logger.log(`Processed ${tweet.id_str} for ${guilds[guild].id} [${guilds[guild].name}]`, "info");
                     }
                 }
             }
