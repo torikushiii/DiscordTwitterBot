@@ -26,3 +26,7 @@ module.exports = (async function () {
         }
     }
 });
+
+setInterval(() => {
+    require("../presence")();
+}, 900000);
