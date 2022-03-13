@@ -74,68 +74,68 @@ module.exports = class Stream {
     }
 
     stream (data) {
-        const guilds = data.guilds;
         this.#stream = this.#server.stream("statuses/filter", { follow: data.track });
         this.#stream.on("connected", () => client.logger.log("Connected to Twitter.", "info"));
         this.#stream.on("reconnect", () => client.logger.log("Reconnected to Twitter.", "info"));
         this.#stream.on("disconnect", () => this.disconnected());
-        this.#stream.on("tweet", async tweet => {
-            for (const guild of Object.keys(guilds)) {
-                for (const channel of guilds[guild].channels) {
-                    if (channel.tid === tweet.user.id_str) {
-                        client.logger.log(`Processing ${tweet.id_str} for ${guilds[guild].id} [${guilds[guild].name}]`, "info");
+        this.#stream.on("tweet", tweet => this.processTweet(tweet));
+    }
+
+    async processTweet (tweet) {
+        const guilds = data.guilds;
+        for (const guild of Object.keys(guilds)) {
+            for (const channel of guilds[guild].channels) {
+                if (channel.tid === tweet.user.id_str) {
+                    client.logger.log(`Processing ${tweet.id_str} for ${guilds[guild].id} [${guilds[guild].name}]`, "info");
+                    try {
+                        const { embed, text } = this.buildEmbed(tweet, guilds[guild]);
+                        const sendObject = {
+                            content: "",
+                        };
+
+                        if (guilds[guild].showurl) {
+                            sendObject.content = text
+                        }
+
+                        if (guilds[guild].type === 0) {
+                            sendObject.embeds = embed
+                        }
+
                         try {
-                            const { embed, text } = this.buildEmbed(tweet, guilds[guild]);
-                            const sendObject = {
-                                content: "",
-                            };
-
-                            if (guilds[guild].showurl) {
-                                sendObject.content = text
-                            }
-
-                            if (guilds[guild].type === 0) {
-                                sendObject.embeds = embed
-                            }
-
-                            try {
-                                client.logger.log(`Sending to ${guilds[guild].id} [${guilds[guild].name}]`, "info");
-                                client.channels.cache.get(channel.id).send(sendObject);
-                                client.logger.log(`Sended to ${guilds[guild].id} [${guilds[guild].name}]`, "info");
-                            }
-                            catch (e) {
-                                client.logger.log(`Failed to send to ${guilds[guild].id} [${guilds[guild].name}]`, "error");
-                                console.error(e, {
-                                    origin: "stream.js",
-                                    context: {
-                                        cause: "Failed to send tweet to channel",
-                                        id: guilds[guild].id,
-                                        name: guilds[guild].name,
-                                        tweet: tweet.id_str,
-                                        channel: channel.id
-                                    }
-                                })
-                            }
+                            client.logger.log(`Sending to ${guilds[guild].id} [${guilds[guild].name}]`, "info");
+                            client.channels.cache.get(channel.id).send(sendObject);
+                            client.logger.log(`Sended to ${guilds[guild].id} [${guilds[guild].name}]`, "info");
                         }
                         catch (e) {
-                            client.logger.log(`Failed to process ${tweet.id_str} for ${guilds[guild].id}`, "error");
+                            client.logger.log(`Failed to send to ${guilds[guild].id} [${guilds[guild].name}]`, "error");
                             console.error(e, {
                                 origin: "stream.js",
                                 context: {
-                                    cause: "Failed to process tweet/send message to channel",
+                                    cause: "Failed to send tweet to channel",
                                     id: guilds[guild].id,
                                     name: guilds[guild].name,
                                     tweet: tweet.id_str,
-                                    channel: channel.id,
+                                    channel: channel.id
                                 }
                             })
                         }
-
-                        client.logger.log(`Processed ${tweet.id_str} for ${guilds[guild].id} [${guilds[guild].name}]`, "info");
+                    }
+                    catch (e) {
+                        client.logger.log(`Failed to process ${tweet.id_str} for ${guilds[guild].id}`, "error");
+                        console.error(e, {
+                            origin: "stream.js",
+                            context: {
+                                cause: "Failed to process tweet/send message to channel",
+                                id: guilds[guild].id,
+                                name: guilds[guild].name,
+                                tweet: tweet.id_str,
+                                channel: channel.id,
+                            }
+                        })
                     }
                 }
             }
-        })
+        }
     }
 
     buildEmbed (tweet, guild) {
