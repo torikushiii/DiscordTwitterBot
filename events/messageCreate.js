@@ -4,6 +4,13 @@ module.exports = async message => {
     }
 
     try {
+        if (message.guild) {
+            await client.loader.getGuildConfig(message.guild);
+            const config = client.guildConfig[message.guild.id].config;
+
+            message.prefix = config?.customprefix ? config.customprefix : process.env.PREFIX;
+        }
+
         if (!message.prefix) {
             message.prefix = process.env.PREFIX ?? "$";
         }

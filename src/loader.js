@@ -39,6 +39,39 @@ module.exports = class Loader {
         return null;
     }
 
+    static async getGuildConfig (guild) {
+        if (!guild.available) {
+            return console.error(`Guild ${guild.id} is not available`, {
+                origin: "Loader.getGuildConfig",
+                context: {
+                    cause: "Guild is not available",
+                }
+            })
+        }
+
+        if (client.guildConfig[guild.id]) {
+            return client.guildConfig[guild.id];
+        }
+
+        client.guildConfig[guild.id] = new Object;
+        let config = await client.query.findOne("twitter", "guilds", { id: guild.id });
+        if (!config) {
+            const template = {
+                type: 0,
+                showurl: true,
+                id: guild.id,
+                name: guild.name,
+                customprefix: null,
+                channels: []
+            }
+
+            await client.query.insertOne("twitter", "guilds", template);
+            config = template;
+        }
+
+        client.guildConfig[guild.id].config = config;
+    }
+
     static events () {
         fs.readdir("./events", (err, files) => {
             if (err) {

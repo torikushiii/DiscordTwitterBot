@@ -13,9 +13,11 @@
     await require("./src/components")();
     try {
         require("./src/loader").events();
+        client.loader = require("./src/loader");
         client.commands = require("./src/loader").commands();
         client.twitter = require("./src/twitter");
         client.cache = new Map();
+        client.guildConfig = new Object;
         await client.login(process.env.DISCORD_TOKEN).catch(err => {
             console.error("[ERROR] An error occured while logging in to Discord:", err, {
                 origin: "index.js",
