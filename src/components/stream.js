@@ -78,10 +78,10 @@ module.exports = class Stream {
         this.#stream.on("connected", () => client.logger.log("Connected to Twitter.", "info"));
         this.#stream.on("reconnect", () => client.logger.log("Reconnected to Twitter.", "info"));
         this.#stream.on("disconnect", () => this.disconnected());
-        this.#stream.on("tweet", tweet => this.processTweet(tweet));
+        this.#stream.on("tweet", tweet => this.processTweet(data, tweet));
     }
 
-    async processTweet (tweet) {
+    async processTweet (data, tweet) {
         const guilds = data.guilds;
         for (const guild of Object.keys(guilds)) {
             for (const channel of guilds[guild].channels) {
