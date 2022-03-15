@@ -10,6 +10,8 @@ This bot will build the embed itself to prevent Discord from not auto-generating
 
 - Get the latest tweet from any Twitter user.
 - Auto build Tweet embed.
+- Supports multi-server.
+- Custom prefix.
 - Supports third-party Twitter sites:
   - [fxtwitter](https://github.com/robinuniverse/TwitFix)
   - [nitter](https://github.com/zedeus/nitter)
@@ -18,7 +20,7 @@ This bot will build the embed itself to prevent Discord from not auto-generating
 
 If you want to add Twitter Bot to your Discord server, you can just click [this link](https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456)
 
-> Default Prefix: $ (You can change this in config.js. Customizable prefix soon!)
+> Default Prefix: $ (You can change this in config.js or set it using "set" command.)
 - {PREFIX}add `This will add a Twitter user account to your guild`
     - $add username #channel-tag E.g: #twitter-feed
     - $add @username #channel-tag E.g: #twitter-feed
@@ -43,6 +45,8 @@ If you want to add Twitter Bot to your Discord server, you can just click [this 
 
     - $set showurl true or false
     - $set showurl:false (This will not send original Twitter link to the channel. Only for Twitter  links!)
+    - $set prefix [prefix]
+    - $set prefix ! (This will set the default prefix to "!" on your server)
 
 # Hosting Your Own Instance
 
