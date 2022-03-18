@@ -74,6 +74,10 @@ module.exports = class Stream {
     }
 
     stream (data) {
+        if (data.track.length === 0) {
+            return client.logger.log("No users to track.", "warn");
+        }
+
         this.#stream = this.#server.stream("statuses/filter", { follow: data.track });
         this.#stream.on("connected", () => client.logger.log("Connected to Twitter.", "info"));
         this.#stream.on("reconnect", () => client.logger.log("Reconnected to Twitter.", "info"));
