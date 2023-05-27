@@ -1,5 +1,6 @@
 const { CronJob } = require("cron");
 const events = require("./events.js");
+const api = require("../twitter/index.js");
 const user = require("../twitter/user.js");
 const channelLists = require("../../channels.json");
 const timelineFetcher = require("./timeline-fetcher.js");
@@ -14,18 +15,27 @@ class Sentinel {
 
 	async fetchTimeline () {
 		const userLists = await this.#getUsers();
-		const tweets = await timelineFetcher(userLists);
+		if (userLists.length === 0) {
+			console.warn("No users to fetch.");
+			return;
+		}
+
+		// maybe create a batch of guest tokens to use instead of hammering the API with requests
+		const guestToken = await this.fetchGuestToken();
+		if (guestToken.success === false) {
+			console.error(guestToken.error);
+			return;
+		}
+
+		const tweets = await timelineFetcher(userLists, { fetch: true, guestToken: guestToken.value });
 		if (!tweets.success) {
 			console.error(tweets.error);
 			return;
 		}
 
-		const rateLimited = tweets.value.every(i => i.length === 0);
-		if (rateLimited) {
-			// rework this thanks
-			// fetch new guest token every request
-			// instead of invalidating it when rate limited
-			await this.#invalidateGuestToken();
+		const isRateLimited = tweets.value.every(i => i.length === 0);
+		if (isRateLimited) {
+			console.warn("All tweets were returned empty, rate limited?");
 			return;
 		}
 
@@ -93,15 +103,6 @@ class Sentinel {
 		);
 	}
 
-	async #invalidateGuestToken () {
-		const guestToken = await app.Cache.get("gql-twitter-guest-token");
-		if (!guestToken) {
-			return;
-		}
-
-		await app.Cache.delete("gql-twitter-guest-token");
-	}
-
 	async #getUsers (options = {}) {
 		let channels = await app.Cache.get("twitter-channels");
 		if (!channels) {
@@ -137,6 +138,25 @@ class Sentinel {
 		}
 
 		return users;
+	}
+
+	async fetchGuestToken () {
+		const { bearerToken } = api.defaults;
+		const guestTokenResult = await api.fetchGuestToken(bearerToken);
+		if (!guestTokenResult.success) {
+			return {
+				success: false,
+				error: {
+					code: guestTokenResult.error.code,
+					message: guestTokenResult.error.message
+				}
+			};
+		}
+
+		return {
+			success: true,
+			value: guestTokenResult.token
+		};
 	}
 
 	async start () {
