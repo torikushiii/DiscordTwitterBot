@@ -185,6 +185,7 @@ const parseTweet = async (tweet) => {
 	}
 
 	if (tweetObject.retweeted_status_result) {
+		const { screen_name } = tweetObject.entities.user_mentions[0];
 		const { legacy: retweetLegacy } = tweetObject.retweeted_status_result.result;
 		const { extended_entities: extendedEntities } = retweetLegacy;
 		if (extendedEntities) {
@@ -202,6 +203,7 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
+		tweetData.text = `RT @${screen_name}: ${retweetLegacy.full_text}`;
 		tweetData.type = "retweet";
 
 		return tweetData;
