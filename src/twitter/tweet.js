@@ -149,9 +149,8 @@ const fetchTweet = async (data) => {
 };
 
 const parseTweet = async (tweet) => {
-	// create a separate function to handle blocked tweets or other tombstones errors
-	// by providing cookie auth first
-	// if the tweet is still blocked, then return null
+	// unfortunately, we can't do anything with NSFW tweets with guest auth :(
+	// if we are using authed cookie, it will be rate limited very quickly
 	if (tweet?.tombstone) {
 		return null;
 	}
