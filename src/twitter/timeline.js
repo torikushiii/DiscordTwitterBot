@@ -9,42 +9,73 @@ const cacheKeys = {
 	slugs: "gql-twitter-api-slugs"
 };
 
-const timeline = async (userId) => {
+const timeline = async (userId, options = {}) => {
 	const { bearerToken } = api.defaults;
-	let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
-	if (!guestToken) {
-		const guestTokenResult = await api.fetchGuestToken(bearerToken);
-		if (!guestTokenResult.success) {
+	if (options.fetch) {
+		if (!options.guestToken) {
 			return {
 				success: false,
 				error: {
-					code: guestTokenResult.error.code,
-					message: guestTokenResult.error.message
+					code: "NO_GUEST_TOKEN_PROVIDED",
+					message: "No guest token provided."
 				}
 			};
 		}
 
-		guestToken = guestTokenResult.token;
-		await app.Cache.setByPrefix(cacheKeys.guestToken, guestToken, { expiry: 300_000 });
+		const timelineResult = await fetchTimeline({
+			bearerToken,
+			guestToken: options.guestToken,
+			userId
+		});
+
+		if (!timelineResult.success) {
+			return {
+				success: false,
+				error: {
+					code: timelineResult.error.code,
+					message: timelineResult.error.message
+				}
+			};
+		}
+
+		return timelineResult.entries;
 	}
-
-	const timelineResult = await fetchTimeline({
-		bearerToken,
-		guestToken,
-		userId
-	});
-
-	if (!timelineResult.success) {
-		return {
-			success: false,
-			error: {
-				code: timelineResult.error.code,
-				message: timelineResult.error.message
+	else {
+		let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
+		if (!guestToken) {
+			const guestTokenResult = await api.fetchGuestToken(bearerToken);
+			if (!guestTokenResult.success) {
+				return {
+					success: false,
+					error: {
+						code: guestTokenResult.error.code,
+						message: guestTokenResult.error.message
+					}
+				};
 			}
-		};
-	}
 
-	return timelineResult.entries;
+			guestToken = guestTokenResult.token;
+			await app.Cache.setByPrefix(cacheKeys.guestToken, guestToken, { expiry: 300_000 });
+		}
+
+		const timelineResult = await fetchTimeline({
+			bearerToken,
+			guestToken,
+			userId
+		});
+
+		if (!timelineResult.success) {
+			return {
+				success: false,
+				error: {
+					code: timelineResult.error.code,
+					message: timelineResult.error.message
+				}
+			};
+		}
+
+		return timelineResult.entries;
+	}
 };
 
 const fetchTimeline = async (data) => {
