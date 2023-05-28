@@ -26,7 +26,22 @@ module.exports = class CacheSingleton extends require("./template.js") {
 	constructor () {
 		super();
 
-		this.connect({ db: 3 });
+		if (!process.env.REDIS_HOST || !process.env.REDIS_PORT) {
+			throw new Error("Redis is not configured");
+		}
+
+		const redisDb = process.env.REDIS_DB ?? 0;
+		if (redisDb && !this.isValidInteger(Number(redisDb))) {
+			throw new Error("If provided, Redis DB must be a valid positive integer");
+		}
+
+		const configuration = {
+			host: process.env.REDIS_HOST,
+			port: process.env.REDIS_PORT,
+			db: redisDb
+		};
+
+		this.connect(configuration);
 	}
 
 	connect (configuration) {
