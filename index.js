@@ -1,3 +1,6 @@
+const { config } = require("dotenv");
+config();
+
 (async () => {
 	const init = require("./src/index.js");
 	globalThis.app = await init();
