@@ -4,6 +4,7 @@ module.exports = (async function () {
 	const files = [
 		"got",
 		"cache",
+		"command",
 		"sentinel"
 	];
 
@@ -14,6 +15,9 @@ module.exports = (async function () {
 				break;
 			case "sentinel":
 				app.Sentinel = require("./sentinel/index.js");
+				break;
+			case "command":
+				app.Command = require("./discord/command.js");
 				break;
 			case "got":
 				app.Got = await require("./got/index.js");
