@@ -35,16 +35,23 @@ module.exports = {
 		const { channels } = guildData;
 
 		const added = [];
+		const errors = [];
 		const skipped = [];
+		const privateUser = [];
+
 		for (const user of users) {
-			const exists = channels.find(i => i.name === user);
+			const exists = channels.find(i => i.username === user);
 			if (exists) {
 				skipped.push(user);
 			}
 			else {
 				const data = await FetchUser(user);
 				if (!data?.success && data?.error?.code === "NO_USER_FOUND") {
-					skipped.push(user);
+					errors.push(user);
+					continue;
+				}
+				else if (data.private) {
+					privateUser.push(user);
 					continue;
 				}
 
@@ -68,9 +75,33 @@ module.exports = {
 			await app.Sentinel.addNewChannels(added);
 		}
 
+		if (added.length === 0 && skipped.length === 0 && errors.length === 0 && privateUser.length === 0) {
+			return {
+				success: false,
+				reply: "No users were added."
+			};
+		}
+
+		let reply = `Added users to <#${announceChannel.id}>\n`;
+		if (added.length !== 0) {
+			reply += `Added ${added.length} user(s) to the timeline fetcher: ${added.join(", ")}\n`;
+		}
+
+		if (skipped.length !== 0) {
+			reply += `Skipped ${skipped.length} user(s) because you are already subscribed to them: ${skipped.join(", ")}\n`;
+		}
+
+		if (errors.length !== 0) {
+			reply += `Skipped ${errors.length} user(s) because they do not exist: ${errors.join(", ")}\n`;
+		}
+
+		if (privateUser.length !== 0) {
+			reply += `Skipped ${privateUser.length} user(s) because their account is private: ${privateUser.join(", ")}\n`;
+		}
+
 		return {
 			success: true,
-			reply: `Added ${added.length} user(s) to the timeline fetcher and skipped ${skipped.length} user(s).`
+			reply
 		};
 	})
 };
