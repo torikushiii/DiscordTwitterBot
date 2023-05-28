@@ -7,5 +7,6 @@ module.exports = {
 			success: true,
 			reply: "Pong!"
 		};
-	})
+	}),
+	usage: null
 };
