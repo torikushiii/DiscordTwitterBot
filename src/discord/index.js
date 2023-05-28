@@ -273,7 +273,7 @@ module.exports = class DiscordController {
 
 	async removeGuild (guild) {
 		const { id } = guild;
-		await app.Cache.deleteByPrefix(`discord-guilds-${id}`);
+		await app.Cache.delete(`discord-guilds-${id}`);
 	}
 
 	is (string) {
