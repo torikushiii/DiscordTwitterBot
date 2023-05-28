@@ -2,6 +2,7 @@ module.exports = (async function () {
 	globalThis.app = {};
 
 	const files = [
+		"got",
 		"cache",
 		"sentinel"
 	];
@@ -13,6 +14,9 @@ module.exports = (async function () {
 				break;
 			case "sentinel":
 				app.Sentinel = require("./sentinel/index.js");
+				break;
+			case "got":
+				app.Got = await require("./got/index.js");
 				break;
 		}
 	}
