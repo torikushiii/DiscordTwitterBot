@@ -1,4 +1,3 @@
-const got = require("got");
 const api = require("./index.js");
 
 const cacheKeys = {
@@ -106,7 +105,7 @@ const fetchTweet = async (data) => {
 	const varString = encodeURIComponent(JSON.stringify(variables));
 	const featureString = encodeURIComponent(JSON.stringify(features));
 
-	const response = await got({
+	const response = await app.Got({
 		url: `https://api.twitter.com/graphql/${slug}/TweetDetail?variables=${varString}&features=${featureString}`,
 		responseType: "json",
 		headers: {

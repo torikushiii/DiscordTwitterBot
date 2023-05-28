@@ -1,5 +1,3 @@
-const got = require("got");
-
 const defaults = {
 	csrfToken: "2a5b3ceebc9bac4b4abafe716185b2ef",
 	bearerToken: "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
@@ -126,7 +124,7 @@ const defaults = {
 };
 
 const fetchGuestToken = async (bearerToken) => {
-	const response = await got({
+	const response = await app.Got({
 		url: "https://api.twitter.com/1.1/guest/activate.json",
 		method: "POST",
 		responseType: "json",
