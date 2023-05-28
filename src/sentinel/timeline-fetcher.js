@@ -14,7 +14,7 @@ const fetchTimeline = async (userLists) => {
 		};
 	}
 
-	const batchSize = 10; // Number of requests to make simultaneously
+	const batchSize = Math.ceil(userLists.length / 10);
 	const requests = [];
 	const userArray = [...userLists];
 	while (userArray.length) {
@@ -25,24 +25,24 @@ const fetchTimeline = async (userLists) => {
 
 	const results = await Promise.all(requests);
 
-	const entries = [];
+	const timelineEntries = [];
 	for (const result of results) {
 		for (const value of result) {
 			if (value.success === false) {
 				continue;
 			}
-			entries.push(...value);
+			timelineEntries.push(...value);
 		}
 	}
 
-	const tweets = [];
+	const userTimelines = [];
 	for (const user of userLists) {
-		tweets.push(entries.filter((i) => i.user_id_str === user.id));
+		userTimelines.push(timelineEntries.filter((i) => i.user_id_str === user.id));
 	}
 
 	return {
 		success: true,
-		value: tweets
+		value: userTimelines
 	};
 };
 
