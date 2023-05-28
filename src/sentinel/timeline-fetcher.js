@@ -1,6 +1,6 @@
 const timeline = require("../twitter/timeline.js");
 
-const fetchTimeline = async (userLists, options = {}) => {
+const fetchTimeline = async (userLists) => {
 	if (userLists.length === 0) {
 		return {
 			success: false,
@@ -19,7 +19,7 @@ const fetchTimeline = async (userLists, options = {}) => {
 	const userArray = [...userLists];
 	while (userArray.length) {
 		const batch = userArray.splice(0, batchSize);
-		const batchRequests = batch.map((user) => timeline(user.id, options));
+		const batchRequests = batch.map((user) => timeline(user.id));
 		requests.push(Promise.all(batchRequests));
 	}
 

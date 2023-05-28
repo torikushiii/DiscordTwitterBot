@@ -1,4 +1,3 @@
-const got = require("got");
 const api = require("./index.js");
 
 const cacheKeys = {
@@ -9,73 +8,42 @@ const cacheKeys = {
 	slugs: "gql-twitter-api-slugs"
 };
 
-const timeline = async (userId, options = {}) => {
+const timeline = async (userId) => {
 	const { bearerToken } = api.defaults;
-	if (options.fetch) {
-		if (!options.guestToken) {
+	let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
+	if (!guestToken) {
+		const guestTokenResult = await api.fetchGuestToken(bearerToken);
+		if (!guestTokenResult.success) {
 			return {
 				success: false,
 				error: {
-					code: "NO_GUEST_TOKEN_PROVIDED",
-					message: "No guest token provided."
+					code: guestTokenResult.error.code,
+					message: guestTokenResult.error.message
 				}
 			};
 		}
 
-		const timelineResult = await fetchTimeline({
-			bearerToken,
-			guestToken: options.guestToken,
-			userId
-		});
-
-		if (!timelineResult.success) {
-			return {
-				success: false,
-				error: {
-					code: timelineResult.error.code,
-					message: timelineResult.error.message
-				}
-			};
-		}
-
-		return timelineResult.entries;
+		guestToken = guestTokenResult.token;
+		await app.Cache.setByPrefix(cacheKeys.guestToken, guestToken, { expiry: 300_000 });
 	}
-	else {
-		let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
-		if (!guestToken) {
-			const guestTokenResult = await api.fetchGuestToken(bearerToken);
-			if (!guestTokenResult.success) {
-				return {
-					success: false,
-					error: {
-						code: guestTokenResult.error.code,
-						message: guestTokenResult.error.message
-					}
-				};
+
+	const timelineResult = await fetchTimeline({
+		bearerToken,
+		guestToken,
+		userId
+	});
+
+	if (!timelineResult.success) {
+		return {
+			success: false,
+			error: {
+				code: timelineResult.error.code,
+				message: timelineResult.error.message
 			}
-
-			guestToken = guestTokenResult.token;
-			await app.Cache.setByPrefix(cacheKeys.guestToken, guestToken, { expiry: 300_000 });
-		}
-
-		const timelineResult = await fetchTimeline({
-			bearerToken,
-			guestToken,
-			userId
-		});
-
-		if (!timelineResult.success) {
-			return {
-				success: false,
-				error: {
-					code: timelineResult.error.code,
-					message: timelineResult.error.message
-				}
-			};
-		}
-
-		return timelineResult.entries;
+		};
 	}
+
+	return timelineResult.entries;
 };
 
 const fetchTimeline = async (data) => {
@@ -96,7 +64,7 @@ const fetchTimeline = async (data) => {
 	const featureString = encodeURIComponent(JSON.stringify(features));
 
 	const endpoint = "UserTweets";
-	const response = await got({
+	const response = await app.Got({
 		url: `https://api.twitter.com/graphql/${slug}/${endpoint}?variables=${varString}&features=${featureString}`,
 		responseType: "json",
 		throwHttpErrors: false,
