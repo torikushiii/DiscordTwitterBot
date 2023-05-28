@@ -189,7 +189,7 @@ class Command {
 			throw new Error("Args must be an array");
 		}
 
-		const command = Command.get(identifier);
+		const command = this.get(identifier);
 		if (!command) {
 			return {
 				success: false,
@@ -240,6 +240,10 @@ class Command {
 				execution.reply = "(no message)";
 			}
 		}
+		
+		if (execution.reply === "embed") {
+			return;
+		}
 
 		return execution;
 	}
@@ -254,12 +258,16 @@ class Command {
 		Command.definitions = definitions;
 	}
 
-	static get (command) {
+	get (command) {
 		if (typeof command !== "string") {
 			throw new Error("Command must be a string");
 		}
 
 		return Command.data.find(i => i.name === command || i.aliases.includes(command));
+	}
+
+	getAll () {
+		return Command.data;
 	}
 }
 
