@@ -119,7 +119,7 @@ const fetchTimeline = async (data) => {
 		};
 	}
 
-	const timeline = response.body?.data?.user?.result?.timeline_v2?.timeline?.instructions?.[1].entries;
+	const timeline = response.body?.data?.user?.result?.timeline_v2?.timeline?.instructions?.[1]?.entries;
 	if (!timeline || !Array.isArray(timeline)) {
 		return {
 			success: false,
