@@ -1,6 +1,5 @@
 const { CronJob } = require("cron");
 const events = require("./events.js");
-const api = require("../twitter/index.js");
 const user = require("../twitter/user.js");
 const channelLists = require("../../channels.json");
 const timelineFetcher = require("./timeline-fetcher.js");
@@ -20,14 +19,7 @@ class Sentinel {
 			return;
 		}
 
-		// maybe create a batch of guest tokens to use instead of hammering the API with requests
-		const guestToken = await this.fetchGuestToken();
-		if (guestToken.success === false) {
-			console.error(guestToken.error);
-			return;
-		}
-
-		const tweets = await timelineFetcher(userLists, { fetch: true, guestToken: guestToken.value });
+		const tweets = await timelineFetcher(userLists);
 		if (!tweets.success) {
 			console.error(tweets.error);
 			return;
@@ -140,26 +132,9 @@ class Sentinel {
 		return users;
 	}
 
-	async fetchGuestToken () {
-		const { bearerToken } = api.defaults;
-		const guestTokenResult = await api.fetchGuestToken(bearerToken);
-		if (!guestTokenResult.success) {
-			return {
-				success: false,
-				error: {
-					code: guestTokenResult.error.code,
-					message: guestTokenResult.error.message
-				}
-			};
-		}
-
-		return {
-			success: true,
-			value: guestTokenResult.token
-		};
-	}
-
 	async start () {
+		// Clear the guest token cache to avoid any issues.
+		await app.Cache.delete("gql-twitter-guest-token");
 		// You can change the cron job to whatever you want.
 		// https://crontab.guru/ is a good website to help you with that.
 		const job = new CronJob("*/5 * * * * *", async () => {
