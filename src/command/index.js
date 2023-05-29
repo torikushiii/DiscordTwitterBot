@@ -272,6 +272,23 @@ class Command {
 	getAll () {
 		return Command.data;
 	}
+
+	is (string) {
+		const prefix = process.env.PREFIX;
+		if (prefix === undefined || prefix === null) {
+			return false;
+		}
+
+		return (string.startsWith(prefix) && string.trim().length > prefix.length);
+	}
+
+	prefix () {
+		return Command.getPrefix();
+	}
+
+	static getPrefix () {
+		return process.env.PREFIX ?? null;
+	}
 }
 
 module.exports = new Command();
