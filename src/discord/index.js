@@ -85,7 +85,7 @@ module.exports = class DiscordController {
 			
 			const userPermissions = message.channel.permissionsFor(message.author);
 			if (userPermissions && !userPermissions.has(PermissionFlagsBits.Administrator)) {
-				return this.send("user-no-perm", message.channel);
+				return;
 			}
 
 			const botPermissions = message.channel.permissionsFor(this.selfId);
