@@ -7,10 +7,6 @@ const {
 	Partials,
 	PermissionFlagsBits
 } = require("discord.js");
-const Command = require("./command.js");
-const { config } = require("dotenv");
-
-config();
 
 module.exports = class DiscordController {
 	constructor () {
@@ -44,7 +40,6 @@ module.exports = class DiscordController {
 		});
 
 		this.initListeners();
-		this.loadCommands();
 
 		const token = process.env.DISCORD_TOKEN;
 		this.client.login(token);
@@ -177,7 +172,7 @@ module.exports = class DiscordController {
 	}
 
 	async handleCommand (command, args, channelData, userData, options = {}) {
-		const execution = await Command.execute(command, args, channelData, userData, options);
+		const execution = await app.Command.execute(command, args, channelData, userData, options);
 		if (!execution) {
 			return;
 		}
@@ -214,10 +209,6 @@ module.exports = class DiscordController {
 			privateChannel: messageData.channel.type === ChannelType.DM,
 			commandArguments: args
 		};
-	}
-
-	async loadCommands () {
-		await Command.loadCommands();
 	}
 
 	static removeEmoteTags (message) {

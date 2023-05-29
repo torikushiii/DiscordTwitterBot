@@ -17,7 +17,7 @@ module.exports = (async function () {
 				app.Sentinel = require("./sentinel/index.js");
 				break;
 			case "command":
-				app.Command = require("./discord/command.js");
+				app.Command = require("./command/index.js");
 				break;
 			case "got":
 				app.Got = await require("./got/index.js");

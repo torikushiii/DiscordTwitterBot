@@ -1,6 +1,10 @@
 class Command {
 	static data = [];
 
+	constructor () {
+		this.loadCommands();
+	}
+
 	static parseParameter (value, type, explicit) {
 		if (type === "string" && explicit === false && value === "") {
 			return null;
@@ -80,7 +84,6 @@ class Command {
 		let parameters = {};
 
 		let buffer = "";
-		/** @type {typeof paramsDefinition[0] | null} */
 		let currentParam = null;
 		let insideParam = false;
 		let quotedParam = false;
