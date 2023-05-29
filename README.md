@@ -4,6 +4,10 @@ This is a working prototype of fetching "real-time" tweets since the new Twitter
 
 If you want to try it out, you can add the bot to your server by clicking [here](https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456).
 
+The only features that are working right now are:
+- Getting new tweets from a user (like Twitter streaming API)
+- Getting user RTs
+
 Please note that this bot is still in development and may not be online 24/7.
 
 # Limitations
