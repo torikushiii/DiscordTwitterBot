@@ -65,6 +65,7 @@ module.exports = class DiscordController {
 
 		client.on("messageCreate", async (message) => {
 			const {
+				author,
 				commandArguments,
 				chan,
 				userId,
@@ -78,12 +79,21 @@ module.exports = class DiscordController {
 				return;
 			}
 
-			const permissions = message.channel.permissionsFor(this.selfId);
-			if (permissions && !permissions.has(PermissionFlagsBits.SendMessages)) {
+			if (author.bot) {
+				return;
+			}
+			
+			const userPermissions = message.channel.permissionsFor(message.author);
+			if (userPermissions && !userPermissions.has(PermissionFlagsBits.Administrator)) {
+				return this.send("user-no-perm", message.channel);
+			}
+
+			const botPermissions = message.channel.permissionsFor(this.selfId);
+			if (botPermissions && !botPermissions.has(PermissionFlagsBits.SendMessages)) {
 				return;
 			}
 
-			if (this.is(msg)) {
+			if (app.Command.is(msg)) {
 				const commandPrefix = this.prefix;
 				const command = msg.replace(commandPrefix, "").split(" ").find(Boolean);
 				const args = (commandArguments[0] === commandPrefix)
@@ -265,22 +275,5 @@ module.exports = class DiscordController {
 	async removeGuild (guild) {
 		const { id } = guild;
 		await app.Cache.delete(`discord-guilds-${id}`);
-	}
-
-	is (string) {
-		const prefix = process.env.PREFIX;
-		if (prefix === undefined || prefix === null) {
-			return false;
-		}
-
-		return (string.startsWith(prefix) && string.trim().length > prefix.length);
-	}
-
-	prefix () {
-		return DiscordController.getPrefix();
-	}
-
-	static getPrefix () {
-		return process.env.PREFIX ?? null;
 	}
 };
