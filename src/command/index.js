@@ -109,7 +109,7 @@ class Command {
 		return (string.startsWith(prefix) && string.trim().length > prefix.length);
 	}
 
-	prefix () {
+	get prefix () {
 		return Command.getPrefix();
 	}
 
