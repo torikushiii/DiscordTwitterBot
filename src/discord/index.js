@@ -56,7 +56,7 @@ module.exports = class DiscordController {
 				status: "online",
 				activities: [
 					{
-						name: "TwitterBot v2.0.0",
+						name: `TwitterBot | ${app.Command.prefix}help`,
 						type: ActivityType.Playing
 					}
 				]
