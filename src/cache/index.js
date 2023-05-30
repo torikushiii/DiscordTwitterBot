@@ -172,20 +172,11 @@ module.exports = class CacheSingleton extends require("./template.js") {
 
 	async setByPrefix (prefix, value, options = {}) {
 		if (typeof prefix === "undefined") {
-			throw new Error({
-				message: "No key providded"
-			});
-		}
-		else if (typeof prefix?.getCacheKey === "function") {
-			return await this.set({
-				key: prefix.getCacheKey(),
-				value,
-				...options
-			});
+			throw new Error("No key provided");
 		}
 
 		if (typeof value === "undefined") {
-			throw new Error("No value providded");
+			throw new Error("No value provided");
 		}
 
 		const optionsMap = new Map(Object.entries(options));
@@ -235,16 +226,6 @@ module.exports = class CacheSingleton extends require("./template.js") {
 		return results;
 	}
 
-	async getKeyValuesByPrefix (prefix, options) {
-		const keys = await this.getKeysByPrefix(prefix, options);
-		const promises = keys.map(async i => await this.get(i));
-
-		return await Promise.all(promises);
-	}
-
-	/**
-	 * Cleans up and destroys the singleton caching instance
-	 */
 	destroy () {
 		if (this.#server) {
 			if (this.#active) {
@@ -258,10 +239,6 @@ module.exports = class CacheSingleton extends require("./template.js") {
 		this.#server = null;
 	}
 
-	/**
-	 * @param {*} value
-	 * @returns {string|*}
-	 */
 	static resolveKey (value) {
 		if (value === null || typeof value === "undefined") {
 			throw new Error("Cannot use null or undefined as key");
