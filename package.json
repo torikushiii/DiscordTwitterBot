@@ -14,10 +14,12 @@
     "eslint-plugin-unicorn": "^45.0.2"
   },
   "dependencies": {
+    "chalk": "^5.2.0",
     "cron": "^2.3.0",
     "discord.js": "^14.11.0",
     "dotenv": "^16.0.3",
     "got": "^13.0.0",
-    "ioredis": "^5.3.2"
+    "ioredis": "^5.3.2",
+    "winston": "^3.9.0"
   }
 }
