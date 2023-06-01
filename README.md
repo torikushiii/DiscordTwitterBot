@@ -21,7 +21,9 @@ Default prefix is "`-`".
     - `${prefix}add <username> channel:<channel_id>` - Adds a user to the streaming list and sends the tweets to the specified channel, if no channel is specified, it will send the tweets to the channel where the command was executed.
 - `{prefix}remove <username>` - Removes a user from the streaming list
     - `${prefix}remove <username> <username>` - Removes multiple users from the streaming list
-- `{prefix}list` - Lists all users that are currently being streamed on the server
+- `{prefix}list` - Lists all users that are currently being streamed on the 
+- `${prefix}prefix` - Shows the current prefix
+    - `${prefix}prefix <new_prefix>` - Changes the prefix
 
 # Limitations
 Since this bot is using guest authentication, There are some limitations:
