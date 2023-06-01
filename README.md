@@ -13,6 +13,7 @@ Please note that this bot is still in development and may not be online 24/7.
 # Features
 - Fetching almost real-time tweets from a user (approx. 5 seconds delay from the time the tweet was posted)
 - Fetching user RTs
+- Fetching quoted tweets
 
 # Permissions
 Required permissions for user to use the bot:
