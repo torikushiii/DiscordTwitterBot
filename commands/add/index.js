@@ -68,6 +68,7 @@ module.exports = {
 			const guildObject = {
 				id: context.channel.guild.id,
 				name: context.channel.guild.name,
+				prefix: guildData.prefix,
 				channels
 			};
 

@@ -92,8 +92,9 @@ module.exports = class DiscordController {
 				return;
 			}
 
-			if (app.Command.is(msg)) {
-				const commandPrefix = app.Command.prefix;
+			const serverData = await app.Cache.get(`discord-guilds-${guild.id}`);
+			if (app.Command.is(msg, serverData)) {
+				const commandPrefix = serverData.prefix ?? app.Command.prefix;
 				const command = msg.replace(commandPrefix, "").split(" ").find(Boolean);
 				const args = (commandArguments[0] === commandPrefix)
 					? commandArguments.slice(2)

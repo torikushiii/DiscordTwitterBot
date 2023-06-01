@@ -100,9 +100,9 @@ class Command {
 		return Command.data;
 	}
 
-	is (string) {
-		const prefix = process.env.PREFIX;
-		if (prefix === undefined || prefix === null) {
+	is (string, channelData) {
+		const prefix = channelData.prefix ?? Command.getPrefix();
+		if (prefix === null) {
 			return false;
 		}
 
