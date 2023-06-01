@@ -132,15 +132,15 @@ class Sentinel {
 		return users;
 	}
 
-	async generateErrorId (e) {
+	async generateErrorId (e, guildId) {
 		const id = await app.Cache.get("error-id");
-		console.log(id);
 		if (!id) {
 			await app.Cache.set({
 				key: "error-id",
 				value: [
 					{
 						id: 1,
+						source: guildId,
 						message: e.message,
 						stack: e.stack
 					}
@@ -158,6 +158,7 @@ class Sentinel {
 				...id,
 				{
 					id: newId,
+					source: guildId,
 					message: e.message,
 					stack: e.stack
 				}
