@@ -52,9 +52,16 @@ class Command {
 			execution = await command.code(contextOptions, ...args);
 		}
 		catch (e) {
+			const errorId = await app.Sentinel.generateErrorId(e);
+
+			const prettify = (errorId) => {
+				const string = `Please report this error ID to the developer using the command \`{prefix}report ${errorId}\`.`;
+				return `${string}`;
+			}
+
 			execution = {
 				success: false,
-				reply: e.message
+				reply: `An error occurred while executing this command. - ${prettify(errorId)}`
 			};
 
 			console.error(`Error executing command "${identifier}"`, e);

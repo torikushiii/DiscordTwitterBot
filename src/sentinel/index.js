@@ -132,6 +132,42 @@ class Sentinel {
 		return users;
 	}
 
+	async generateErrorId (e) {
+		const id = await app.Cache.get("error-id");
+		console.log(id);
+		if (!id) {
+			await app.Cache.set({
+				key: "error-id",
+				value: [
+					{
+						id: 1,
+						message: e.message,
+						stack: e.stack
+					}
+				],
+				expiry: 0
+			});
+
+			return 1;
+		}
+
+		const newId = id.length + 1;
+		await app.Cache.set({
+			key: "error-id",
+			value: [
+				...id,
+				{
+					id: newId,
+					message: e.message,
+					stack: e.stack
+				}
+			],
+			expiry: 0
+		});
+
+		return newId;
+	}
+
 	async start () {
 		// Clear the guest token cache to avoid any issues.
 		await app.Cache.delete("gql-twitter-guest-token");
