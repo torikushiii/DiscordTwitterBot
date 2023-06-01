@@ -5,15 +5,15 @@ const channelLists = require("../../channels.json");
 const timelineFetcher = require("./timeline-fetcher.js");
 
 class Sentinel {
-	firstRun = true;
-	#ignoreList = [];
+	static firstRun = true;
+	static #ignoreList = [];
 
 	constructor () {
 		this.start();
 	}
 
 	async fetchTimeline () {
-		const userLists = await this.#getUsers();
+		const userLists = await Sentinel.#getUsers();
 		if (userLists.length === 0) {
 			console.warn("No users to fetch.");
 			return;
@@ -31,10 +31,10 @@ class Sentinel {
 			return;
 		}
 
-		await this.processTweets(tweets.value);
+		await Sentinel.processTweets(tweets.value);
 	}
 
-	async processTweets (tweetsData) {
+	static async processTweets (tweetsData) {
 		for (const item of tweetsData) {
 			const userId = item?.[0]?.user_id_str;
 			if (!userId) {
@@ -95,7 +95,7 @@ class Sentinel {
 		);
 	}
 
-	async #getUsers (options = {}) {
+	static async #getUsers (options = {}) {
 		let channels = await app.Cache.get("twitter-channels");
 		if (!channels) {
 			console.log("No channels found in cache, defaulting to channels.json.");
