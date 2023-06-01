@@ -132,6 +132,40 @@ class Sentinel {
 		return users;
 	}
 
+	async removeInactiveChannels () {
+		const cachedChannels = await Sentinel.#getUsers({ usernameOnly: true });
+		const guilds = await app.Cache.getKeysByPrefix("discord-guilds-*");
+		if (guilds.length === 0) {
+			return;
+		}
+
+		const allChannels = [];
+		for (const guild of guilds) {
+			const guildData = await app.Cache.getByPrefix(guild);
+			const { channels } = guildData;
+			if (channels.length === 0) {
+				continue;
+			}
+
+			allChannels.push(channels.map(i => i.username));
+		}
+
+		const channels = allChannels.flat();
+		const inactiveChannels = cachedChannels.filter(i => !channels.includes(i));
+
+		if (inactiveChannels.length === 0) {
+			return;
+		}
+
+		await app.Cache.setByPrefix(
+			"twitter-channels",
+			cachedChannels.filter(i => !inactiveChannels.includes(i)),
+			{ expireAt: 0 }
+		);
+
+		console.log(`Removed ${inactiveChannels.length} inactive channels.`);
+	}
+
 	async generateErrorId (e, guildId) {
 		const id = await app.Cache.get("error-id");
 		if (!id) {
@@ -175,6 +209,7 @@ class Sentinel {
 		// You can change the cron job to whatever you want.
 		// https://crontab.guru/ is a good website to help you with that.
 		new CronJob("*/5 * * * * *", this.fetchTimeline.bind(this), null, true);
+		new CronJob("* * * * *", this.removeInactiveChannels.bind(this), null, true);
 	}
 }
 
