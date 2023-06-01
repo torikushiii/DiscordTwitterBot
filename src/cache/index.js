@@ -62,7 +62,7 @@ module.exports = class CacheSingleton extends require("./template.js") {
 		this.#server = new Redis(configuration);
 		this.#active = true;
 
-		console.log("Connected to Redis.");
+		app.Log.info("Connected to Redis.");
 
 		this.#server.info().then(data => {
 			const versionData = data.split("\n").find(i => i.startsWith("redis_version"));

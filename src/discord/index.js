@@ -49,7 +49,7 @@ module.exports = class DiscordController {
 		const client = this.client;
 
 		client.on("ready", () => {
-			console.log(`Logged in as ${client.user.tag}!`);
+			app.Log.info(`Logged in as ${client.user.tag}!`);
 			this.initGuilds();
 
 			client.user.setPresence({
@@ -169,7 +169,7 @@ module.exports = class DiscordController {
 				});
 			}
 			else if (e.message.includes("connection timeout")) {
-				console.warn("Discord connection timeout");
+				app.Log.warn("Discord connection timeout");
 				await this.send(message, channel, options);
 			}
 			else {

@@ -15,7 +15,7 @@ class Sentinel {
 	async fetchTimeline () {
 		const userLists = await Sentinel.#getUsers();
 		if (userLists.length === 0) {
-			console.warn("No users to fetch.");
+			app.Log.warn("No users to fetch.");
 			return;
 		}
 
@@ -27,7 +27,7 @@ class Sentinel {
 
 		const isRateLimited = tweets.value.every(i => i.length === 0);
 		if (isRateLimited) {
-			console.warn("All tweets were returned empty, rate limited?");
+			app.Log.warn("All tweets were returned empty, rate limited?");
 			return;
 		}
 
@@ -71,7 +71,7 @@ class Sentinel {
 		}
 
 		if (this.firstRun) {
-			console.log(`Sentinel is now watching ${tweetsData.length} channels.`);
+			app.Log.info(`Sentinel is now watching ${tweetsData.length} channels.`);
 		}
 
 		this.firstRun = false;
@@ -98,7 +98,7 @@ class Sentinel {
 	static async #getUsers (options = {}) {
 		let channels = await app.Cache.get("twitter-channels");
 		if (!channels) {
-			console.log("No channels found in cache, defaulting to channels.json.");
+			app.Log.warn("No channels found in cache, defaulting to channels.json.");
 			await app.Cache.setByPrefix(
 				"twitter-channels",
 				channelLists,
@@ -116,7 +116,7 @@ class Sentinel {
 			if (userData?.success === false) {
 				if (userData.error.code === "NO_USER_FOUND") {
 					this.#ignoreList.push(channel);
-					console.warn(`User ${channel} not found, ignoring.`);
+					app.Log.warn(`User ${channel} not found, ignoring.`);
 				}
 
 				continue;
@@ -163,7 +163,7 @@ class Sentinel {
 			{ expireAt: 0 }
 		);
 
-		console.log(`Removed ${inactiveChannels.length} inactive channels.`);
+		app.Log.info(`Removed ${inactiveChannels.length} inactive channels.`);
 	}
 
 	async generateErrorId (e, guildId) {
