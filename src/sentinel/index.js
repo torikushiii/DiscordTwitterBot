@@ -137,11 +137,7 @@ class Sentinel {
 		await app.Cache.delete("gql-twitter-guest-token");
 		// You can change the cron job to whatever you want.
 		// https://crontab.guru/ is a good website to help you with that.
-		const job = new CronJob("*/5 * * * * *", async () => {
-			await this.fetchTimeline();
-		});
-
-		job.start();
+		new CronJob("*/5 * * * * *", this.fetchTimeline.bind(this), null, true);
 	}
 }
 
