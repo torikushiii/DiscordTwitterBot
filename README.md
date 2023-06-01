@@ -14,6 +14,19 @@ Please note that this bot is still in development and may not be online 24/7.
 - Fetching almost real-time tweets from a user (approx. 5 seconds delay from the time the tweet was posted)
 - Fetching user RTs
 
+# Permissions
+Required permissions for user to use the bot:
+- User
+    - Administrator
+    - Manage Server
+    - Manage Channels
+    - Manage Messages
+
+Required permissions for the bot to work:
+- Bot
+    - Send Messages
+    - Embed Links
+
 # Usage
 Default prefix is "`-`".
 - `{prefix}add <username>` - Adds a user to the streaming list
@@ -22,8 +35,9 @@ Default prefix is "`-`".
 - `{prefix}remove <username>` - Removes a user from the streaming list
     - `${prefix}remove <username> <username>` - Removes multiple users from the streaming list
 - `{prefix}list` - Lists all users that are currently being streamed on the 
-- `${prefix}prefix` - Shows the current prefix
+- `{prefix}prefix` - Shows the current prefix
     - `${prefix}prefix <new_prefix>` - Changes the prefix
+- `{prefix}report <id>` - Reports an issue to the developer with the specified ID
 
 # Limitations
 Since this bot is using guest authentication, There are some limitations:
