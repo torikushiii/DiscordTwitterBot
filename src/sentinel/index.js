@@ -82,7 +82,7 @@ class Sentinel {
 			throw new Error("Channels must be an array.");
 		}
 
-		const cachedChannels = await this.#getUsers({ usernameOnly: true });
+		const cachedChannels = await Sentinel.#getUsers({ usernameOnly: true });
 		const newChannels = channels.filter(i => !cachedChannels.includes(i));
 		if (newChannels.length === 0) {
 			return;
