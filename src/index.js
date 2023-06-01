@@ -2,6 +2,8 @@ module.exports = (async function () {
 	globalThis.app = {};
 
 	const files = [
+		"log",
+
 		"got",
 		"cache",
 		"command",
@@ -21,6 +23,9 @@ module.exports = (async function () {
 				break;
 			case "got":
 				app.Got = await require("./got/index.js");
+				break;
+			case "log":
+				app.Log = await require("./log/index.js");
 				break;
 		}
 	}
