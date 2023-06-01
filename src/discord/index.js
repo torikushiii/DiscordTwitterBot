@@ -20,7 +20,6 @@ module.exports = class DiscordController {
 			throw new Error("Discord prefix has not been configured");
 		}
 
-		this.prefix = process.env.PREFIX;
 		this.selfId = process.env.SELF_ID;
 
 		this.#init();
@@ -94,7 +93,7 @@ module.exports = class DiscordController {
 			}
 
 			if (app.Command.is(msg)) {
-				const commandPrefix = this.prefix;
+				const commandPrefix = app.Command.prefix;
 				const command = msg.replace(commandPrefix, "").split(" ").find(Boolean);
 				const args = (commandArguments[0] === commandPrefix)
 					? commandArguments.slice(2)
@@ -232,6 +231,7 @@ module.exports = class DiscordController {
 			const guildObject = {
 				id,
 				name,
+				prefix: app.Command.prefix,
 				channels: []
 			};
 
@@ -248,6 +248,7 @@ module.exports = class DiscordController {
 				const guildObject = {
 					id,
 					name,
+					prefix: app.Command.prefix,
 					channels: []
 				};
 
@@ -264,6 +265,7 @@ module.exports = class DiscordController {
 				const guildObject = {
 					id,
 					name,
+					prefix: app.Command.prefix,
 					channels: []
 				};
 
