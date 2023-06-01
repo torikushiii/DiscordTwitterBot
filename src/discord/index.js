@@ -1,3 +1,4 @@
+const permission = require("./permissions.js");
 const {
 	ActivityType,
 	ChannelType,
@@ -82,8 +83,8 @@ module.exports = class DiscordController {
 				return;
 			}
 			
-			const userPermissions = message.channel.permissionsFor(message.author);
-			if (userPermissions && !userPermissions.has(PermissionFlagsBits.Administrator)) {
+			const isAllowed = permission.isAllowed(message.channel, message.author);
+			if (!isAllowed) {
 				return;
 			}
 
