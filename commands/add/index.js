@@ -72,8 +72,8 @@ module.exports = {
 				channels
 			};
 
-			await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildObject, { expiry: 0 });
 			await app.Sentinel.addNewChannels(added);
+			await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildObject, { expiry: 0 });
 		}
 
 		if (added.length === 0 && skipped.length === 0 && errors.length === 0 && privateUser.length === 0) {
