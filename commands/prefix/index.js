@@ -29,5 +29,17 @@ module.exports = {
 			reply: `The prefix has been changed to \`${target}\`.`
 		};
 	}),
-	usage: null
+	usage: [
+		{
+			color: 0x00FF00,
+			title: "Prefix",
+			description: "Change the prefix for the bot."
+			+ "\n\n**Usage:**"
+			+ "\n`prefix <prefix>`",
+			timestamp: new Date(),
+			footer: {
+				text: "The prefix must be 2 characters or less."
+			}
+		}
+	]
 };

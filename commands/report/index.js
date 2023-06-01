@@ -49,5 +49,17 @@ module.exports = {
 			reply: "Error reported."
 		};
 	}),
-	usage: null
+	usage: [
+		{
+			color: 0x00FF00,
+			title: "Report",
+			description: "Report a bug or issue with the bot using an error ID."
+			+ "\n\n**Usage:**"
+			+ "\n`report <error ID>`",
+			timestamp: new Date(),
+			footer: {
+				text: "Error IDs are provided when an error occurs."
+			}
+		}
+	]
 };
