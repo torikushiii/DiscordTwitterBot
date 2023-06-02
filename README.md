@@ -16,7 +16,7 @@ Please note that this bot is still in development and may not be online 24/7.
 - Fetching quoted tweets
 
 # Permissions
-Required permissions for user to use the bot:
+User needs at least one of the following roles to use the bot:
 - User
     - Administrator
     - Manage Server
