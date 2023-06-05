@@ -88,6 +88,8 @@ class Sentinel {
 			return;
 		}
 
+		app.Log.info(`Adding ${newChannels.length} new channels.`);
+
 		await app.Cache.setByPrefix(
 			"twitter-channels",
 			[...cachedChannels, ...newChannels],
@@ -95,10 +97,47 @@ class Sentinel {
 		);
 	}
 
+	async purgeUsers (users) {
+		if (!Array.isArray(users)) {
+			throw new Error("Users must be an array.");
+		}
+
+		const cachedChannels = await Sentinel.#getUsers({ usernameOnly: true });
+		const channels = cachedChannels.filter(i => !users.includes(i));
+		if (channels.length === 0) {
+			return;
+		}
+
+		app.Log.info(`Purging ${users.length} channels.`);
+
+		for (const user of users) {
+			const userData = await app.Cache.get(`gql-twitter-userdata-${user}`);
+			if (userData) {
+				const userId = userData.id;
+
+				await Promise.all([
+					app.Cache.delete(`gql-twitter-userdata-${user}`),
+					app.Cache.delete(`twitter-timeline-${userId}`)
+				]);
+			}
+		}
+
+		await app.Cache.setByPrefix(
+			"twitter-channels",
+			channels,
+			{ expireAt: 0 }
+		);
+	}
+
 	static async #getUsers (options = {}) {
 		let channels = await app.Cache.get("twitter-channels");
 		if (!channels) {
-			app.Log.warn("No channels found in cache, defaulting to channels.json.");
+			app.Log.warn("No channels found in redis, checking channels.json.");
+			if (channelLists.length === 0) {
+				app.Log.error("No channels found in channels.json");
+				return [];
+			}
+
 			await app.Cache.setByPrefix(
 				"twitter-channels",
 				channelLists,
