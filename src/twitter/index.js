@@ -123,6 +123,14 @@ const defaults = {
 	}
 };
 
+const cacheKeys = {
+	entryPage: "gql-twitter-entry-page",
+	mainFile: "gql-twitter-main-page",
+	bearerToken: "gql-twitter-bearer-token",
+	guestToken: "gql-twitter-guest-token",
+	slugs: "gql-twitter-api-slugs"
+};
+
 const fetchGuestToken = async (bearerToken) => {
 	const response = await app.Got({
 		url: "https://api.twitter.com/1.1/guest/activate.json",
@@ -166,5 +174,6 @@ const fetchGuestToken = async (bearerToken) => {
 
 module.exports = {
 	defaults,
-	fetchGuestToken
+	fetchGuestToken,
+	cacheKeys
 };
