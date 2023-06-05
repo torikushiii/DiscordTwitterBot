@@ -237,6 +237,8 @@ module.exports = class DiscordController {
 				channels: []
 			};
 
+			app.Log.info(`Joined guild (${id}) ${name}`);
+
 			await app.Cache.setByPrefix(`discord-guilds-${id}`, guildObject, { expiry: 0 });
 		}
 	}
@@ -279,5 +281,7 @@ module.exports = class DiscordController {
 	async removeGuild (guild) {
 		const { id } = guild;
 		await app.Cache.delete(`discord-guilds-${id}`);
+
+		app.Log.info(`Left guild (${id}) ${guild.name}`);
 	}
 };
