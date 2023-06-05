@@ -28,8 +28,6 @@ module.exports = {
 			}
 		}
 
-		await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildData, { expiry: 0 });
-
 		if (removed.length === 0 && skipped.length === 0) {
 			return {
 				success: false,
@@ -43,6 +41,9 @@ module.exports = {
 				reply: `No user(s) were removed. ${skipped.length} user(s) were skipped: ${skipped.join(", ")}.`
 			};
 		}
+
+		await app.Sentinel.purgeUsers(removed);
+		await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildData, { expiry: 0 });
 
 		return {
 			success: true,
