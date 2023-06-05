@@ -1,12 +1,4 @@
-const api = require("./index.js");
-
-const cacheKeys = {
-	entryPage: "gql-twitter-entry-page",
-	mainFile: "gql-twitter-main-page",
-	bearerToken: "gql-twitter-bearer-token",
-	guestToken: "gql-twitter-guest-token",
-	slugs: "gql-twitter-api-slugs"
-};
+const { defaults, cacheKeys, fetchGuestToken } = require("./index.js");
 
 const getTweet = async (tweetId, options = {}) => {
 	if (!options.fetch) {
@@ -37,10 +29,10 @@ const getTweet = async (tweetId, options = {}) => {
 		};
 	}
 	else {
-		const { bearerToken } = api.defaults;
+		const { bearerToken } = defaults;
 		let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
 		if (!guestToken) {
-			const guestTokenResult = await api.fetchGuestToken(bearerToken);
+			const guestTokenResult = await fetchGuestToken(bearerToken);
 			if (!guestTokenResult.success) {
 				return {
 					success: false,
@@ -208,19 +200,21 @@ const parseTweet = async (tweet) => {
 	}
 	else if (tweetObject.is_quote_status && tweet.quoted_status_result) {
 		const { legacy: quoteLegacy } = tweet.quoted_status_result.result;
-		const { extended_entities: extendedEntities } = quoteLegacy;
-		if (extendedEntities) {
-			const { media } = extendedEntities;
-			if (media) {
-				const mediaData = media.map((mediaItem) => {
-					const { type, media_url_https: url } = mediaItem;
-					return {
-						type,
-						url
-					};
-				});
+		if (quoteLegacy?.extended_entities) {
+			const { extended_entities: extendedEntities } = quoteLegacy;
+			if (extendedEntities) {
+				const { media } = extendedEntities;
+				if (media) {
+					const mediaData = media.map((mediaItem) => {
+						const { type, media_url_https: url } = mediaItem;
+						return {
+							type,
+							url
+						};
+					});
 
-				tweetData.media = mediaData;
+					tweetData.media = mediaData;
+				}
 			}
 		}
 

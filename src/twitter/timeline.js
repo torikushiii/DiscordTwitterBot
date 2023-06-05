@@ -1,18 +1,10 @@
-const api = require("./index.js");
-
-const cacheKeys = {
-	entryPage: "gql-twitter-entry-page",
-	mainFile: "gql-twitter-main-page",
-	bearerToken: "gql-twitter-bearer-token",
-	guestToken: "gql-twitter-guest-token",
-	slugs: "gql-twitter-api-slugs"
-};
+const { defaults, fetchGuestToken, cacheKeys } = require("./index.js");
 
 const timeline = async (userId) => {
-	const { bearerToken } = api.defaults;
+	const { bearerToken } = defaults;
 	let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
 	if (!guestToken) {
-		const guestTokenResult = await api.fetchGuestToken(bearerToken);
+		const guestTokenResult = await fetchGuestToken(bearerToken);
 		if (!guestTokenResult.success) {
 			return {
 				success: false,
@@ -47,7 +39,6 @@ const timeline = async (userId) => {
 };
 
 const fetchTimeline = async (data) => {
-	const { defaults } = api;
 	const { bearerToken, guestToken, userId } = data;
 	const slug = defaults.slugs.timeline;
 	const variables = {
