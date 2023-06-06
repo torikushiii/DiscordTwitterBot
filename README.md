@@ -28,13 +28,31 @@ Required permissions for the bot to work:
     - Send Messages
     - Embed Links
 
+# Development
+- Preqrequisites
+    - Have [node](https://nodejs.org/en/) installed.
+    - Have [redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04) installed.
+    - Setup some channels first in `channels.json` first.
+        - rename `example.channels.json` to `channels.json` or create a new one.
+
+# Installation
+```
+# Install dependencies and create your .env copy
+$ npm i
+$ cp .env.example .env
+# Make sure to fill in the .env file with your own values before continuing
+
+# If all things went well, you can start the bot
+$ npm start / node index.js
+```
+
 # Usage
 Default prefix is "`-`".
 - `{prefix}add <username>` - Adds a user to the streaming list
-    - `${prefix}add <username> <username>` - Adds multiple users to the streaming list
+    - `${prefix}add <username#1> <username#2>` - Adds multiple users to the streaming list
     - `${prefix}add <username> channel:<channel_id>` - Adds a user to the streaming list and sends the tweets to the specified channel, if no channel is specified, it will send the tweets to the channel where the command was executed.
 - `{prefix}remove <username>` - Removes a user from the streaming list
-    - `${prefix}remove <username> <username>` - Removes multiple users from the streaming list
+    - `${prefix}remove <username#1> <username#2>` - Removes multiple users from the streaming list
 - `{prefix}list` - Lists all users that are currently being streamed on the 
 - `{prefix}prefix` - Shows the current prefix
     - `${prefix}prefix <new_prefix>` - Changes the prefix
