@@ -48,7 +48,6 @@ const user = async (username) => {
 };
 
 const fetchUserData = async (data) => {
-	const { defaults } = api;
 	const { bearerToken, guestToken, slug, username } = data;
 	const variables = {
 		screen_name: username,
