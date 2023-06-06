@@ -3,6 +3,7 @@
   "module": "index.js",
   "type": "commonjs",
   "scripts": {
+    "start": "node index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
