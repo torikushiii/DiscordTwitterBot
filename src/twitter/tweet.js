@@ -82,7 +82,6 @@ const getTweet = async (tweetId, options = {}) => {
 };
 
 const fetchTweet = async (data) => {
-	const { defaults } = api;
 	const { bearerToken, guestToken, focalTweetId } = data;
 	const slug = defaults.slugs.tweet;
 	const variables = {
