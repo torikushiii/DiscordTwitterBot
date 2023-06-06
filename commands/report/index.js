@@ -4,6 +4,13 @@ module.exports = {
 	params: [],
 	description: "Report a bug or issue with the bot.",
 	code: (async function report (context, errorId) {
+		if (!process.env.CHANNEL_REPORT) {
+			return {
+				success: false,
+				reply: "Error reporting is not enabled."
+			};
+		}
+		
 		if (!errorId) {
 			return {
 				success: false,
