@@ -1,4 +1,6 @@
-# Due to Twitter is no longer supporting guest authentication, this bot will no longer work. I will try to find a workaround soon.
+# ~~Due to Twitter is no longer supporting guest authentication, this bot will no longer work. I will try to find a workaround soon.~~
+
+# Issue has been fixed, the bot is now working again.
 
 # DiscordTwitterBot
 
