@@ -1,7 +1,6 @@
 const { CronJob } = require("cron");
 const events = require("./events.js");
 const user = require("../twitter/user.js");
-const api = require("../twitter/index.js");
 const channelLists = require("../../channels.json");
 const timelineFetcher = require("./timeline-fetcher.js");
 
@@ -28,11 +27,8 @@ class Sentinel {
 
 		const isRateLimited = tweets.value.every(i => i.length === 0);
 		if (isRateLimited) {
-			// app.Log.warn("All tweets were returned empty, rate limited?");
-			app.Log.warn("All tweets returned empty, fetching guest token...");
-			await Sentinel.invalidateGuestToken();
-
-			return await Sentinel.fetchGuestToken();
+			app.Log.warn("All tweets returned are empty (?)");
+			return;
 		}
 
 		await Sentinel.processTweets(tweets.value);
@@ -40,7 +36,7 @@ class Sentinel {
 
 	static async processTweets (tweetsData) {
 		for (const item of tweetsData) {
-			const userId = item?.[0]?.user_id_str;
+			const userId = item?.[0]?.user.id_str;
 			if (!userId) {
 				continue;
 			}
@@ -209,28 +205,6 @@ class Sentinel {
 		app.Log.info(`Removed ${inactiveChannels.length} inactive channels.`);
 	}
 
-	static async fetchGuestToken () {
-		const { bearerToken } = api.defaults;
-		const guestTokenResult = await api.fetchGuestToken(bearerToken);
-		if (!guestTokenResult.success) {
-			return app.Log.json(guestTokenResult);
-		}
-
-		await app.Cache.setByPrefix(
-			"gql-twitter-guest-token",
-			guestTokenResult.token,
-			{ expireAt: 300_000 }
-		);
-
-		return true;
-	}
-
-	static async invalidateGuestToken () {
-		await app.Cache.delete("gql-twitter-guest-token");
-
-		return true;
-	}
-
 	async generateErrorId (e, guildId) {
 		const id = await app.Cache.get("error-id");
 		if (!id) {
@@ -269,8 +243,6 @@ class Sentinel {
 	}
 
 	async start () {
-		// Clear the guest token cache to avoid any issues.
-		await app.Cache.delete("gql-twitter-guest-token");
 		// You can change the cron job to whatever you want.
 		// https://crontab.guru/ is a good website to help you with that.
 		/* eslint-disable no-new */

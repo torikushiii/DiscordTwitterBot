@@ -12,7 +12,7 @@ module.exports = (async () => {
 		mutableDefaults: true,
 		throwHttpErrors: false,
 		headers: {
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0"
 		},
 		hooks: {
 			beforeError: [
@@ -33,38 +33,6 @@ module.exports = (async () => {
 					return err;
 				}
 			]
-			// afterResponse: [
-			// 	async (response, retryWithMergedOptions) => {
-			// 		if (response.statusCode === 429) {
-			// 			const { bearerToken } = api.defaults;
-			// 			const guestTokenResult = await api.fetchGuestToken(bearerToken);
-			// 			if (!guestTokenResult.success) {
-			// 				return {
-			// 					success: false,
-			// 					error: {
-			// 						code: guestTokenResult.error.code,
-			// 						message: guestTokenResult.error.message
-			// 					}
-			// 				};
-			// 			}
-
-			// 			const updatedOptions = {
-			// 				headers: {
-			// 					"X-Guest-Token": guestTokenResult.token
-			// 				}
-			// 			};
-
-			// 			await app.Cache.delete("gql-twitter-guest-token");
-			// 			await app.Cache.setByPrefix("gql-twitter-guest-token", guestTokenResult.token, { expiry: 300_000 });
-
-			// 			got.defaults.options.merge(updatedOptions);
-
-			// 			return retryWithMergedOptions(updatedOptions);
-			// 		}
-
-			// 		return response;
-			// 	}
-			// ]
 		}
 	});
 

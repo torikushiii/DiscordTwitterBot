@@ -22,7 +22,7 @@ events.on("new-tweet", async (tweetData) => {
 		}
 
 		for (const channel of channels) {
-			if (channel.userId === tweetData.user_id_str) {
+			if (channel.userId === tweetData.user.id_str) {
 				const userPomise = user(channel.username);
 				const parsedTweetPromise = tweet(tweetData.id_str, { tweet: tweetData });
 

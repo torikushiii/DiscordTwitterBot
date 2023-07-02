@@ -1,140 +1,28 @@
-const { defaults, cacheKeys, fetchGuestToken } = require("./index.js");
-
 const getTweet = async (tweetId, options = {}) => {
-	if (!options.fetch) {
-		if (!options.tweet) {
-			return {
-				success: false,
-				error: {
-					code: "NO_TWEET_PROVIDED",
-					message: "No tweet provided"
-				}
-			};
-		}
-		
-		const tweetData = await parseTweet(options.tweet);
-		if (tweetData) {
-			return {
-				success: true,
-				data: tweetData
-			};
-		}
-
+	if (!options.tweet) {
 		return {
 			success: false,
 			error: {
-				code: "TWEET_PARSE_FAILED",
-				message: `Failed to parse tweet ${tweetId}`
+				code: "NO_TWEET_PROVIDED",
+				message: "No tweet provided"
 			}
 		};
 	}
-	else {
-		const { bearerToken } = defaults;
-		let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
-		if (!guestToken) {
-			const guestTokenResult = await fetchGuestToken(bearerToken);
-			if (!guestTokenResult.success) {
-				return {
-					success: false,
-					error: {
-						code: guestTokenResult.error.code,
-						message: guestTokenResult.error.message
-					}
-				};
-			}
-
-			guestToken = guestTokenResult.token;
-			await app.Cache.setByPrefix(cacheKeys.guestToken, guestToken, { expiry: 300_000 });
-		}
-
-		const tweetResult = await fetchTweet({
-			bearerToken,
-			guestToken,
-			focalTweetId: tweetId
-		});
-
-		if (!tweetResult.success) {
-			return {
-				success: false,
-				error: {
-					code: tweetResult.error.code,
-					message: tweetResult.error.message
-				}
-			};
-		}
-
-		const parsedTweet = await parseTweet(tweetResult.tweet);
-		if (!parsedTweet) {
-			return {
-				success: false,
-				error: {
-					code: "TWEET_PARSE_FAILED",
-					message: "Failed to parse tweet"
-				}
-			};
-		}
-
+	
+	const tweetData = await parseTweet(options.tweet);
+	if (tweetData) {
 		return {
 			success: true,
-			data: parsedTweet
-		};
-	}
-};
-
-const fetchTweet = async (data) => {
-	const { bearerToken, guestToken, focalTweetId } = data;
-	const slug = defaults.slugs.tweet;
-	const variables = {
-		focalTweetId,
-		...defaults.tweet.variables
-	};
-
-	const features = {
-		...defaults.tweet.features
-	};
-
-	const varString = encodeURIComponent(JSON.stringify(variables));
-	const featureString = encodeURIComponent(JSON.stringify(features));
-
-	const response = await app.Got({
-		url: `https://api.twitter.com/graphql/${slug}/TweetDetail?variables=${varString}&features=${featureString}`,
-		responseType: "json",
-		headers: {
-			Authorization: `Bearer ${bearerToken}`,
-			"X-guest-token": guestToken,
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
-		}
-	});
-
-	if (response.statusCode !== 200) {
-		return {
-			success: false,
-			error: {
-				message: "Failed to fetch tweet",
-				code: "TWEET_FETCH_FAILED",
-				body: response.body,
-				statusCode: response.statusCode
-			}
-		};
-	}
-
-	const { data: { threaded_conversation_with_injections_v2: { instructions } } } = response.body;
-	const { entries } = instructions[0];
-	const tweet = entries.find((entry) => entry.entryId === `tweet-${focalTweetId}`);
-	if (!tweet) {
-		return {
-			success: false,
-			error: {
-				message: "Tweet not found",
-				code: "TWEET_NOT_FOUND"
-			}
+			data: tweetData
 		};
 	}
 
 	return {
-		success: true,
-		// surely the object is always there :Clueless:
-		tweet: tweet.content.itemContent.tweet_results.result
+		success: false,
+		error: {
+			code: "TWEET_PARSE_FAILED",
+			message: `Failed to parse tweet ${tweetId}`
+		}
 	};
 };
 
@@ -150,33 +38,17 @@ const parseTweet = async (tweet) => {
 	};
 
 	const tweetObject = tweet.legacy ?? tweet;
-	const { id_str: id, user_id_str: userId, full_text: text, created_at: createdAt } = tweetObject;
+	const { id_str: id, full_text: text, created_at: createdAt } = tweetObject;
 
 	tweetData.id = id;
-	tweetData.userId = userId;
+	tweetData.userId = tweetObject.user.id_str;
 	tweetData.text = text;
 	tweetData.createdAt = createdAt;
 
-	// Non-fetched quoted tweet doesn't have a `quoted_status_result` property
-	// so we need to do a request to fetch it
-	if (tweetObject.is_quote_status && !tweet.quoted_status_result) {
-		const data = await getTweet(tweetData.id, { fetch: true });
-		if (!data.success) {
-			return null;
-		}
-
-		if (!data || data === null) {
-			return null;
-		}
-
-		const tweetResult = data.data;
-		return tweetResult;
-	}
-
-	if (tweetObject.retweeted_status_result) {
+	if (tweetObject.retweeted_status) {
 		const { screen_name } = tweetObject.entities.user_mentions[0];
-		const { legacy: retweetLegacy } = tweetObject.retweeted_status_result.result;
-		const { extended_entities: extendedEntities } = retweetLegacy;
+		const retweetData = tweetObject.retweeted_status;
+		const { extended_entities: extendedEntities } = retweetData;
 		if (extendedEntities) {
 			const { media } = extendedEntities;
 			if (media) {
@@ -192,15 +64,15 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
-		tweetData.text = `RT @${screen_name}: ${retweetLegacy.full_text}`;
+		tweetData.text = `RT @${screen_name}: ${retweetData.full_text}`;
 		tweetData.type = "retweet";
 
 		return tweetData;
 	}
-	else if (tweetObject.is_quote_status && tweet.quoted_status_result) {
-		const { legacy: quoteLegacy } = tweet.quoted_status_result.result;
-		if (quoteLegacy?.extended_entities) {
-			const { extended_entities: extendedEntities } = quoteLegacy;
+	else if (tweetObject.is_quote_status && tweet.quoted_status) {
+		const { quoted_status: quotedStatus } = tweetObject;
+		if (quotedStatus?.extended_entities) {
+			const { extended_entities: extendedEntities } = quotedStatus;
 			if (extendedEntities) {
 				const { media } = extendedEntities;
 				if (media) {
@@ -217,11 +89,9 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
-		const userData = tweet.quoted_status_result.result.core.user_results.result.legacy;
-		const { screen_name } = userData;
+		const { screen_name } = tweetObject.user;
 
 		tweetData.text = `Quote @${screen_name}: ${text}`;
-
 		tweetData.type = "quote";
 
 		return tweetData;

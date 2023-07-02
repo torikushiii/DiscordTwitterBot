@@ -1,34 +1,8 @@
-const { defaults, fetchGuestToken, cacheKeys } = require("./index.js");
-
 const user = async (username) => {
-	const { bearerToken } = defaults;
-	let guestToken = await app.Cache.getByPrefix(cacheKeys.guestToken);
-	if (!guestToken) {
-		const guestTokenResult = await fetchGuestToken(bearerToken);
-		if (!guestTokenResult.success) {
-			return {
-				success: false,
-				error: {
-					code: guestTokenResult.error.code,
-					message: guestTokenResult.error.message
-				}
-			};
-		}
-
-		guestToken = guestTokenResult.token;
-		await app.Cache.setByPrefix(cacheKeys.guestToken, guestToken, { expiry: 120_000 });
-	}
-
-	const { slugs } = defaults;
 	const userCacheKey = `gql-twitter-userdata-${username}`;
 	let userData = await app.Cache.getByPrefix(userCacheKey);
 	if (!userData) {
-		const userIdResult = await fetchUserData({
-			bearerToken,
-			guestToken,
-			username,
-			slug: slugs.user
-		});
+		const userIdResult = await fetchUserData(username);
 
 		if (!userIdResult.success) {
 			return {
@@ -47,30 +21,17 @@ const user = async (username) => {
 	return userData;
 };
 
-const fetchUserData = async (data) => {
-	const { bearerToken, guestToken, slug, username } = data;
-	const variables = {
-		screen_name: username,
-		...defaults.user.variables
-	};
-
-	const features = {
-		...defaults.user.features
-	};
-
-	const varString = encodeURIComponent(JSON.stringify(variables));
-	const featureString = encodeURIComponent(JSON.stringify(features));
-
+const fetchUserData = async (user) => {
 	const response = await app.Got({
-		url: `https://api.twitter.com/graphql/${slug}/UserByScreenName?variables=${varString}&features=${featureString}`,
-		responseType: "json",
-		headers: {
-			Authorization: `Bearer ${bearerToken}`,
-			"x-guest-token": guestToken,
-			"x-csrf-token": defaults.csrfToken,
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
-		}
+		url: `https://syndication.twitter.com/srv/timeline-profile/screen-name/${user}`,
+		responseType: "text"
 	});
+
+	const html = response.body;
+
+	const regex = /<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/;
+	const timelineData = JSON.parse(html.match(regex)[1]);
+	const timeline = timelineData.props.pageProps.timeline.entries;
 
 	if (response.statusCode !== 200) {
 		return {
@@ -84,7 +45,7 @@ const fetchUserData = async (data) => {
 		};
 	}
 
-	const id = response.body.data?.user?.result?.rest_id;
+	const id = timeline?.[0]?.content?.tweet?.user?.id_str;
 	if (!id) {
 		return {
 			success: false,
@@ -96,7 +57,7 @@ const fetchUserData = async (data) => {
 		};
 	}
 
-	const { name, screen_name, profile_image_url_https, protected: isPrivate } = response.body.data.user.result.legacy;
+	const { name, screen_name, profile_image_url_https, protected: isPrivate } = timeline[0].content.tweet.user;
 	return {
 		success: true,
 		data: {

@@ -19,7 +19,7 @@ const fetchTimeline = async (userLists) => {
 	const userArray = [...userLists];
 	while (userArray.length) {
 		const batch = userArray.splice(0, batchSize);
-		const batchRequests = batch.map((user) => timeline(user.id));
+		const batchRequests = batch.map((user) => timeline(user.username));
 		requests.push(Promise.all(batchRequests));
 	}
 
@@ -31,13 +31,13 @@ const fetchTimeline = async (userLists) => {
 			if (value.success === false) {
 				continue;
 			}
-			timelineEntries.push(...value);
+			timelineEntries.push(...value.entries);
 		}
 	}
 
 	const userTimelines = [];
 	for (const user of userLists) {
-		userTimelines.push(timelineEntries.filter((i) => i.user_id_str === user.id));
+		userTimelines.push(timelineEntries.filter((i) => i.user.id_str === user.id));
 	}
 
 	return {
