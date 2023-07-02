@@ -262,6 +262,17 @@ module.exports = class DiscordController {
 			return;
 		}
 
+		for (const cachedGuild of cachedGuilds) {
+			const guildId = cachedGuild.replace("discord-guilds-", "");
+			const guild = guilds.get(guildId);
+			if (!guild) {
+				await app.Cache.delete(cachedGuild);
+				app.Log.info(`Left guild (${guildId}) ${cachedGuild.name}`);
+
+				continue;
+			}
+		}
+
 		for (const guild of guilds.values()) {
 			const { id, name } = guild;
 			const cachedGuild = await app.Cache.getByPrefix(`discord-guilds-${id}`);
