@@ -1,6 +1,5 @@
 module.exports = {
 	name: "add",
-	aliases: [],
 	params: [
 		{ name: "channel", type: "string" }
 	],
@@ -13,8 +12,6 @@ module.exports = {
 			};
 		}
 
-		const FetchUser = require("../../src/twitter/user.js");
-		
 		let announceChannel;
 		if (context.params.channel) {
 			// do checks if channels is text and I have permissions
@@ -45,7 +42,7 @@ module.exports = {
 				skipped.push(user);
 			}
 			else {
-				const data = await FetchUser(user);
+				const data = await app.Sentinel.fetchUser(user);
 				if (!data?.success && data?.error?.code === "NO_USER_FOUND") {
 					errors.push(user);
 					continue;
@@ -73,7 +70,11 @@ module.exports = {
 			};
 
 			await app.Sentinel.addNewChannels(added);
-			await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildObject, { expiry: 0 });
+			await app.Cache.setByPrefix(
+				`discord-guilds-${context.channel.guild.id}`,
+				guildObject,
+				{ expiry: 0 }
+			);
 		}
 
 		if (added.length === 0 && skipped.length === 0 && errors.length === 0 && privateUser.length === 0) {
@@ -105,20 +106,5 @@ module.exports = {
 			success: true,
 			reply
 		};
-	}),
-	usage: [
-		{
-			color: 0x00FF00,
-			title: "Add",
-			description: "Subscribe to a user's timeline and have their tweets posted in the specified channel."
-				+ "\n\n**Usage:**"
-				+ "\n`add <username>`"
-				+ "\n`add <username> <username> <username>`"
-				+ "\n`add channel:<channelId> <username> <username> <username>`",
-			timestamp: new Date(),
-			footer: {
-				text: "If no channel is specified, the current channel will be used."
-			}
-		}
-	]
+	})
 };

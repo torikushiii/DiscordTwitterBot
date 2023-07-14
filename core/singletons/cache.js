@@ -26,18 +26,19 @@ module.exports = class CacheSingleton extends require("./template.js") {
 	constructor () {
 		super();
 
-		if (!process.env.REDIS_HOST || !process.env.REDIS_PORT) {
+		const config = app.Config.get("REDIS_CONFIGURATION");
+		if (!app.Config.has("REDIS_CONFIGURATION")) {
 			throw new Error("Redis is not configured");
 		}
 
-		const redisDb = process.env.REDIS_DB ?? 0;
+		const redisDb = config.db ?? 0;
 		if (redisDb && !this.isValidInteger(Number(redisDb))) {
 			throw new Error("If provided, Redis DB must be a valid positive integer");
 		}
 
 		const configuration = {
-			host: process.env.REDIS_HOST,
-			port: process.env.REDIS_PORT,
+			host: config.host,
+			port: config.port,
 			db: redisDb
 		};
 
@@ -62,7 +63,7 @@ module.exports = class CacheSingleton extends require("./template.js") {
 		this.#server = new Redis(configuration);
 		this.#active = true;
 
-		app.Log.info("Connected to Redis.");
+		app.Logger.info("Connected to Redis.");
 
 		this.#server.info().then(data => {
 			const versionData = data.split("\n").find(i => i.startsWith("redis_version"));
@@ -70,7 +71,7 @@ module.exports = class CacheSingleton extends require("./template.js") {
 				this.#version = versionData.split(":")[1].split(".").map(Number);
 			}
 			else {
-				console.warn("Could not find Redis version!", { info: data });
+				app.Logger.warn("Could not find Redis version!", { info: data });
 			}
 		});
 	}

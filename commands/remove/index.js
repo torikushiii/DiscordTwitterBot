@@ -1,6 +1,5 @@
 module.exports = {
 	name: "remove",
-	aliases: [],
 	params: [],
 	description: "Remove a user from the timeline fetcher.",
 	code: (async function remove (context, ...args) {
@@ -42,26 +41,15 @@ module.exports = {
 			};
 		}
 
-		await app.Sentinel.purgeUsers(removed);
-		await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildData, { expiry: 0 });
+		await app.Cache.setByPrefix(
+			`discord-guilds-${context.channel.guild.id}`,
+			guildData,
+			{ expiry: 0 }
+		);
 
 		return {
 			success: true,
 			reply: `Removed ${removed.length} user(s) from the timeline fetcher.`
 		};
-	}),
-	usage: [
-		{
-			color: 0x00FF00,
-			title: "Remove",
-			description: "Unsubscribe from a user's timeline and stop receiving tweets from them."
-			+ "\n\n**Usage:**"
-			+ "\n`remove <username>`"
-			+ "\n`remove <username> <username> <username>`",
-			timestamp: new Date(),
-			footer: {
-				text: "Twitter Timeline Fetcher"
-			}
-		}
-	]
+	})
 };

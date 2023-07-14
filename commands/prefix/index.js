@@ -1,6 +1,5 @@
 module.exports = {
 	name: "prefix",
-	aliases: [],
 	params: [],
 	description: "Change the prefix for the bot.",
 	code: (async function prefix (context, target) {
@@ -28,18 +27,5 @@ module.exports = {
 			success: true,
 			reply: `The prefix has been changed to \`${target}\`.`
 		};
-	}),
-	usage: [
-		{
-			color: 0x00FF00,
-			title: "Prefix",
-			description: "Change the prefix for the bot."
-			+ "\n\n**Usage:**"
-			+ "\n`prefix <prefix>`",
-			timestamp: new Date(),
-			footer: {
-				text: "The prefix must be 2 characters or less."
-			}
-		}
-	]
+	})
 };

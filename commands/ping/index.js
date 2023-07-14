@@ -1,6 +1,5 @@
 module.exports = {
 	name: "ping",
-	aliases: ["p"],
 	params: [],
 	description: "Ping!",
 	code: (async function ping () {
@@ -8,6 +7,5 @@ module.exports = {
 			success: true,
 			reply: "Pong!"
 		};
-	}),
-	usage: null
+	})
 };

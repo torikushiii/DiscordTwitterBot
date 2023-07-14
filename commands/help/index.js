@@ -1,6 +1,5 @@
 module.exports = {
 	name: "help",
-	aliases: ["h"],
 	params: [],
 	description: "Show this help message or get help for a specific command.",
 	code: (async function help (context, identifier) {
@@ -36,6 +35,5 @@ module.exports = {
 			success: true,
 			reply: "embed"
 		};
-	}),
-	usage: null
+	})
 };

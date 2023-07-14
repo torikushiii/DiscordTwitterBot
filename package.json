@@ -1,26 +1,35 @@
 {
-  "name": "twitter",
+  "name": "twitterdiscordbot",
   "module": "index.js",
   "type": "commonjs",
+  "description": "Simple Twitter bot that posts tweets to Discord",
   "scripts": {
     "start": "node index.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint --fix ."
+  },
+  "author": "torikushiii",
+  "license": "AGPL-3.0",
+  "engines": {
+    "node": ">=16.0.0"
   },
   "devDependencies": {
     "bun-types": "^0.5.0",
-    "@babel/core": "^7.18.13",
+    "@babel/core": "^7.18.10",
     "@babel/eslint-parser": "^7.18.9",
-    "eslint": "^8.22.0",
-    "eslint-plugin-unicorn": "^45.0.2"
+    "eslint": "^8.21.0",
+    "eslint-plugin-unicorn": "^43.0.2"
   },
   "dependencies": {
-    "chalk": "^5.2.0",
-    "cron": "^2.3.0",
+    "cron": "^2.3.1",
+    "debug": "^4.3.4",
     "discord.js": "^14.11.0",
-    "dotenv": "^16.0.3",
     "got": "^13.0.0",
-    "ioredis": "^5.3.2",
-    "winston": "^3.9.0"
-  }
+    "ioredis": "^5.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/torikushiii/DiscordTwitterBot"
+  },
+  "homepage": "https://github.com/torikushiii/DiscordTwitterBot#readme"
 }

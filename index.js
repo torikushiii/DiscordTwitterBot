@@ -1,27 +1,32 @@
-const { config } = require("dotenv");
-config();
-
-(async () => {
-	const init = require("./src/index.js");
+(async function () {
+	const init = require("./core/index.js");
 	globalThis.app = await init();
 
-	try {
-		let Client = null;
-		try {
-			Client = require("./src/discord/index.js");
-		}
-		catch (e) {
-			console.error("Failed to load Discord client:", e);
-		}
+	const commands = await require("./commands/index.js");
+	await app.Command.importData(commands.definitions);
 
-		try {
-			app.Discord = new Client();
-		}
-		catch (e) {
-			console.error("Failed to initialize Discord client:", e);
-		}
+	let Controller = null;
+	try {
+		Controller = require("./controller/discord.js");
 	}
 	catch (e) {
-		console.error("Failed to load Discord client:", e);
+		app.Logger.log(e);
+		process.exit(1);
 	}
+
+	try {
+		app.Discord = new Controller();
+	}
+	catch (e) {
+		app.Logger.log(e);
+		process.exit(1);
+	}
+
+	process.on("unhandledRejection", (reason) => {
+		if (!(reason instanceof Error)) {
+			return;
+		}
+
+		console.error(reason);
+	});
 })();

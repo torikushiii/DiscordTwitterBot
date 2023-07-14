@@ -1,8 +1,4 @@
-## ~~Update 1: Due to Twitter is no longer supporting guest authentication, this bot will no longer work. I will try to find a workaround soon.~~
-
-## ~~Update 2: Issue has been fixed, the bot is now working again.~~
-
-## Update 3: Current workaround has been patched by Twitter. This bot will be discontinued until I find a new workaround if there is any.
+## All features should be working as expected, if you encounter any bugs, you can open an issue.
 
 # DiscordTwitterBot
 
@@ -57,7 +53,6 @@ Default prefix is "`-`".
 - `{prefix}list` - Lists all users that are currently being streamed on the 
 - `{prefix}prefix` - Shows the current prefix
     - `${prefix}prefix <new_prefix>` - Changes the prefix
-- `{prefix}report <id>` - Reports an issue to the developer with the specified ID
 
 # Limitations
 Since this bot is using guest authentication, There are some limitations:

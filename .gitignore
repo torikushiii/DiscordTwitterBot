@@ -170,3 +170,5 @@ dist
 
 channels.json
 types.js
+config.js
+!core/classes/config.js

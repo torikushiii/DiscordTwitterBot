@@ -1,6 +1,5 @@
 module.exports = {
 	name: "list",
-	aliases: [],
 	params: [],
 	description: "List all currently active subscriptions for this server.",
 	code: (async function list (context) {
@@ -20,6 +19,5 @@ module.exports = {
 			success: true,
 			reply: `Currently subscribed to ${channels.length} user(s): ${userList}`
 		};
-	}),
-	usage: []
+	})
 };

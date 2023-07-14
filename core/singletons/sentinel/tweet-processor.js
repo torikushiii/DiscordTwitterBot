@@ -1,54 +1,37 @@
-const getTweet = async (tweetId, options = {}) => {
-	if (!options.tweet) {
-		return {
-			success: false,
-			error: {
-				code: "NO_TWEET_PROVIDED",
-				message: "No tweet provided"
-			}
-		};
-	}
-	
-	const tweetData = await parseTweet(options.tweet);
-	if (tweetData) {
-		return {
-			success: true,
-			data: tweetData
-		};
-	}
-
-	return {
-		success: false,
-		error: {
-			code: "TWEET_PARSE_FAILED",
-			message: `Failed to parse tweet ${tweetId}`
-		}
-	};
-};
-
 const parseTweet = async (tweet) => {
-	// unfortunately, we can't do anything with NSFW tweets with guest auth :(
-	// if we are using authed cookie, it will be rate limited very quickly
-	if (tweet?.tombstone) {
-		return null;
-	}
-
 	const tweetData = {
 		type: "tweet"
 	};
 
 	const tweetObject = tweet.legacy ?? tweet;
-	const { id_str: id, full_text: text, created_at: createdAt } = tweetObject;
+	const { conversation_id_str: id, user_id_str: userId, full_text: text, created_at: createdAt } = tweetObject;
 
 	tweetData.id = id;
-	tweetData.userId = tweetObject.user.id_str;
+	tweetData.userId = userId;
 	tweetData.text = text;
 	tweetData.createdAt = createdAt;
 
-	if (tweetObject.retweeted_status) {
+	console.log(tweet);
+	// Non-fetched quoted tweet doesn't have a `quoted_status_result` property
+	// so we need to do a request to fetch it
+	// if (tweetObject.is_quote_status && !tweet.quoted_status_result) {
+	// 	const data = await getTweet(tweetData.id, { fetch: true });
+	// 	if (!data.success) {
+	// 		return null;
+	// 	}
+
+	// 	if (!data || data === null) {
+	// 		return null;
+	// 	}
+
+	// 	const tweetResult = data.data;
+	// 	return tweetResult;
+	// }
+
+	if (tweetObject.retweeted_status_result) {
 		const { screen_name } = tweetObject.entities.user_mentions[0];
-		const retweetData = tweetObject.retweeted_status;
-		const { extended_entities: extendedEntities } = retweetData;
+		const { legacy: retweetLegacy } = tweetObject.retweeted_status_result.result;
+		const { extended_entities: extendedEntities } = retweetLegacy;
 		if (extendedEntities) {
 			const { media } = extendedEntities;
 			if (media) {
@@ -64,15 +47,15 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
-		tweetData.text = `RT @${screen_name}: ${retweetData.full_text}`;
+		tweetData.text = `RT @${screen_name}: ${retweetLegacy.full_text}`;
 		tweetData.type = "retweet";
 
 		return tweetData;
 	}
-	else if (tweetObject.is_quote_status && tweet.quoted_status) {
-		const { quoted_status: quotedStatus } = tweetObject;
-		if (quotedStatus?.extended_entities) {
-			const { extended_entities: extendedEntities } = quotedStatus;
+	else if (tweetObject.is_quote_status && tweet.quoted_status_result) {
+		const { legacy: quoteLegacy } = tweet.quoted_status_result.result;
+		if (quoteLegacy?.extended_entities) {
+			const { extended_entities: extendedEntities } = quoteLegacy;
 			if (extendedEntities) {
 				const { media } = extendedEntities;
 				if (media) {
@@ -89,9 +72,11 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
-		const { screen_name } = tweetObject.user;
+		const userData = tweet.quoted_status_result.result.core.user_results.result.legacy;
+		const { screen_name } = userData;
 
 		tweetData.text = `Quote @${screen_name}: ${text}`;
+
 		tweetData.type = "quote";
 
 		return tweetData;
@@ -116,4 +101,4 @@ const parseTweet = async (tweet) => {
 	return tweetData;
 };
 
-module.exports = getTweet;
+module.exports = parseTweet;
