@@ -114,8 +114,9 @@ module.exports = class TimelineFetcher {
 			return { success: false };
 		}
 
-		const timelineInstruction = res.body.data.user_result.result.timeline_response.timeline.instructions.find(i => i.__typename === "TimelineAddEntries");
+		const timelineInstruction = res.body?.data?.user_result?.result?.timeline_response?.timeline?.instructions.find(i => i.__typename === "TimelineAddEntries");
 		if (!timelineInstruction) {
+			app.Logger.error("Timeline instruction not found", res.body);
 			return { success: false };
 		}
 
