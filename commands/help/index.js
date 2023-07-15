@@ -4,14 +4,19 @@ module.exports = {
 	description: "Show this help message or get help for a specific command.",
 	code: (async function help (context, identifier) {
 		if (!identifier) {
-			const commands = app.Command.getAll();
-			const commandNames = commands
-				.filter(i => i.usage !== null)
-				.map(i => i.name);
-            
+			const commands = app.Command.data;
+			const commandList = commands.map(i => i.name).join(", ");
+
 			return {
 				success: true,
-				reply: `Available commands: ${commandNames.join(", ")}`
+				discord: {
+					embeds: [
+						{
+							title: "Help",
+							description: `Currently available commands: ${commandList}`
+						}
+					]
+				}
 			};
 		}
 
@@ -23,17 +28,18 @@ module.exports = {
 			};
 		}
 
-		if (command.usage === null) {
+		if (!command?.usage) {
 			return {
 				success: true,
 				reply: `No usage information available for ${command.name}.`
 			};
 		}
 
-		await app.Discord.send(null, context.channel, { embed: command.usage });
 		return {
 			success: true,
-			reply: "embed"
+			discord: {
+				embeds: command.usage
+			}
 		};
 	})
 };

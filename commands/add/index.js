@@ -106,5 +106,20 @@ module.exports = {
 			success: true,
 			reply
 		};
-	})
+	}),
+	usage: [
+		{
+			color: 0x00FF00,
+			title: "Add",
+			description: "Subscribe to a user's timeline and have their tweets posted in the specified channel."
+				+ "\n\n**Usage:**"
+				+ "\n`add <username>`"
+				+ "\n`add <username> <username> <username>`"
+				+ "\n`add channel:<channelId> <username> <username> <username>`",
+			timestamp: new Date(),
+			footer: {
+				text: "If no channel is specified, the current channel will be used."
+			}
+		}
+	]
 };

@@ -51,5 +51,19 @@ module.exports = {
 			success: true,
 			reply: `Removed ${removed.length} user(s) from the timeline fetcher.`
 		};
-	})
+	}),
+	usage: [
+		{
+			color: 0x00FF00,
+			title: "Remove",
+			description: "Unsubscribe from a user's timeline and stop receiving tweets from them."
+			+ "\n\n**Usage:**"
+			+ "\n`remove <username>`"
+			+ "\n`remove <username> <username> <username>`",
+			timestamp: new Date(),
+			footer: {
+				text: "Twitter Timeline Fetcher"
+			}
+		}
+	]
 };

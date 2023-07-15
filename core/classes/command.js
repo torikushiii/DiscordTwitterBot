@@ -55,6 +55,10 @@ module.exports = class Command extends require("./template.js") {
 
 			this.params = params;
 		}
+
+		if (data?.usage?.length !== 0) {
+			this.usage = data.usage;
+		}
 	}
 
 	destroy () {
