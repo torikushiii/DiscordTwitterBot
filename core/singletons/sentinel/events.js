@@ -30,7 +30,6 @@ events.on("new-tweet", async (tweetData) => {
 				}
 
 				const parsedTweet = await parser(tweetData);
-				console.log(parsedTweet)
 
 				const text = `New tweet from ${userData.username}: https://twitter.com/${userData.username}/status/${parsedTweet.id}`;
 				const embeds = [
