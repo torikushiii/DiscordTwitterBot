@@ -11,23 +11,6 @@ const parseTweet = async (tweet) => {
 	tweetData.text = text;
 	tweetData.createdAt = createdAt;
 
-	console.log(tweet);
-	// Non-fetched quoted tweet doesn't have a `quoted_status_result` property
-	// so we need to do a request to fetch it
-	// if (tweetObject.is_quote_status && !tweet.quoted_status_result) {
-	// 	const data = await getTweet(tweetData.id, { fetch: true });
-	// 	if (!data.success) {
-	// 		return null;
-	// 	}
-
-	// 	if (!data || data === null) {
-	// 		return null;
-	// 	}
-
-	// 	const tweetResult = data.data;
-	// 	return tweetResult;
-	// }
-
 	if (tweetObject.retweeted_status_result) {
 		const { screen_name } = tweetObject.entities.user_mentions[0];
 		const { legacy: retweetLegacy } = tweetObject.retweeted_status_result.result;
@@ -72,7 +55,7 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
-		const userData = tweet.quoted_status_result.result.core.user_results.result.legacy;
+		const userData = tweet.quoted_status_result.result.core.user_result.result.legacy;
 		const { screen_name } = userData;
 
 		tweetData.text = `Quote @${screen_name}: ${text}`;
