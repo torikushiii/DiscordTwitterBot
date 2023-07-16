@@ -2,6 +2,7 @@ module.exports = class TimelineFetcher {
 	#userList = [];
 	#bearer;
 	#guestToken;
+	#cookies;
 
 	static gqlFeatures = {
 		android_graphql_skip_api_media_color_palette: false,
@@ -50,6 +51,7 @@ module.exports = class TimelineFetcher {
 		this.#userList = userList;
 		this.#guestToken = config.guestToken;
 		this.#bearer = config.bearerToken;
+		this.#cookies = config.cookies;
 	}
 
 	async fetch () {
@@ -91,7 +93,10 @@ module.exports = class TimelineFetcher {
 
 	async fetchTimeline (userId) {
 		const features = encodeURIComponent(JSON.stringify(TimelineFetcher.gqlFeatures));
-		const variables = encodeURIComponent(JSON.stringify({ rest_id: userId }));
+		const variables = encodeURIComponent(JSON.stringify({
+			rest_id: userId,
+			count: 50
+		}));
 
 		const res = await app.Got({
 			url: `https://api.twitter.com/graphql/8IS8MaO-2EN6GZZZb8jF0g/UserWithProfileTweetsAndRepliesQueryV2?variables=${variables}&features=${features}`,
@@ -101,7 +106,10 @@ module.exports = class TimelineFetcher {
 				Authorization: `Bearer ${this.#bearer}`,
 				"X-Guest-Token": this.#guestToken,
 				"X-Twitter-Active-User": "yes",
-				Referer: `https://twitter.com/`
+				Referer: `https://twitter.com/`,
+				Cookie: Object.entries(this.#cookies)
+					.map(i => i.join("="))
+					.join("; ")
 			}
 		});
 

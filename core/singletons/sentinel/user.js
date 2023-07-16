@@ -2,6 +2,7 @@ module.exports = class User {
 	#user;
 	#bearer;
 	#guestToken;
+	#cookies;
 
 	static gqlFeatures = {
 		android_graphql_skip_api_media_color_palette: false,
@@ -50,6 +51,7 @@ module.exports = class User {
 		this.#user = user;
 		this.#guestToken = config.guestToken;
 		this.#bearer = config.bearerToken;
+		this.#cookies = config.cookies;
 	}
 
 	async getUserData () {
@@ -63,7 +65,10 @@ module.exports = class User {
 				Authorization: `Bearer ${this.#bearer}`,
 				"X-Guest-Token": this.#guestToken,
 				"X-Twitter-Active-User": "yes",
-				Referer: `https://twitter.com/`
+				Referer: `https://twitter.com/`,
+				Cookie: Object.entries(this.#cookies)
+					.map(i => i.join("="))
+					.join("; ")
 			}
 		});
 
@@ -72,6 +77,14 @@ module.exports = class User {
 		}
 
 		await app.Sentinel.updateRateLimit();
+		if (app.Sentinel.locked) {
+			return {
+				success: false,
+				error: {
+					code: "RATE_LIMITED"
+				}
+			};
+		}
 
 		const data = res?.body?.data?.user_result?.result;
 		if (!data) {
