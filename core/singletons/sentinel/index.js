@@ -1,6 +1,7 @@
 const User = require("./user.js");
-const TimelineFetcher = require("./timeline-fetcher.js");
 const Events = require("./events.js");
+const Authenticator = require("./authenticator.js");
+const TimelineFetcher = require("./timeline-fetcher.js");
 const Template = require("../template.js");
 
 const { CronJob } = require("cron");
@@ -8,15 +9,14 @@ const channelList = require("../../../channels.json");
 
 module.exports = class SentinelSingleton extends Template {
 	#firstRun = true;
-	running = false;
 	#setup = true;
 	#ignoreList = [];
 	
+	#config = {};
+	#rateLimit;
+	
+	running = false;
 	locked = false;
-	rateLimit = 495;
-
-	#guestToken;
-	#bearerToken = "AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF";
 
 	/**
      * @returns {SentinelSingleton}
@@ -47,17 +47,21 @@ module.exports = class SentinelSingleton extends Template {
 	}
 
 	async init () {
-		const guestToken = await this.fetchGuestToken();
-		if (!guestToken.success) {
-			throw new app.Error({ message: "Failed to fetch guest token" });
+		const auth = await Authenticator.fetchGuestToken();
+		if (!auth.success) {
+			throw new app.Error({
+				message: "Failed to fetch guest token",
+				args: auth
+			});
 		}
 
-		this.#guestToken = guestToken.token;
 		this.#setup = false;
+		this.#rateLimit = auth.rateLimit;
 
-		this.config = {
-			guestToken: this.#guestToken,
-			bearerToken: this.#bearerToken
+		this.#config = {
+			guestToken: auth.token,
+			bearerToken: auth.bearerToken,
+			cookies: auth.cookies
 		};
 
 		for (const cron of this.crons) {
@@ -71,23 +75,27 @@ module.exports = class SentinelSingleton extends Template {
 			return;
 		}
 
+		this.running = true;
+
 		const userList = await this.getUsers();
 		if (userList.length === 0) {
 			throw new app.Error({ message: "No users found" });
 		}
 
-		this.running = true;
-
-		const tf = new TimelineFetcher(userList, this.config);
+		const tf = new TimelineFetcher(userList, this.#config);
 		const timeline = await tf.fetch();
 		
 		const isRateLimited = timeline.every(i => i.length === 0);
 		if (isRateLimited) {
 			const data = await this.invalidateGuestToken();
 			
-			this.config.guestToken = data.token;
-			this.#guestToken = data.token;
-			this.rateLimit = 495;
+			this.#config = {
+				guestToken: data.guest_token,
+				bearerToken: data.bearerToken,
+				cookies: data.cookies
+			};
+
+			this.#rateLimit = data.rateLimit;
 			this.locked = false;
 			this.running = false;
 
@@ -134,15 +142,15 @@ module.exports = class SentinelSingleton extends Template {
 		}
 
 		if (this.#firstRun) {
+			this.#firstRun = false;
 			app.Logger.info(`Sentinel is now watching ${tweetData.length} users`);
 		}
 
-		this.#firstRun = false;
 		this.running = false;
 	}
 
 	async fetchUser (username) {
-		const user = new User(username, this.config);
+		const user = new User(username, this.#config);
 		const userData = await user.getUserData();
 		if (userData.success === false) {
 			return {
@@ -207,8 +215,6 @@ module.exports = class SentinelSingleton extends Template {
 	}
 
 	async getUsers (options = {}) {
-		this.running = true;
-
 		let channels = await app.Cache.get("twitter-channels");
 		if (!channels) {
 			app.Logger.warn("No channels found in Redis, checking channels.json");
@@ -231,9 +237,9 @@ module.exports = class SentinelSingleton extends Template {
 		for (const channel of channels) {
 			let userData = await app.Cache.get(`gql-twitter-userdata-${channel}`);
 			if (!userData) {
-				const user = new User(channel, this.config);
+				const user = new User(channel, this.#config);
 				userData = await user.getUserData();
-				if (userData.success === false) {
+				if (userData.success === false && userData.error.code === "NO_USER_FOUND") {
 					app.Logger.warn(`User ${channel} not found, ignoring`);
 					this.#ignoreList.push(channel.toLowerCase());
 					continue;
@@ -250,8 +256,6 @@ module.exports = class SentinelSingleton extends Template {
 
 			users.push(userData);
 		}
-
-		this.running = false;
 
 		if (options.usernameOnly) {
 			return users.map(i => i.username.toLowerCase());
@@ -296,40 +300,12 @@ module.exports = class SentinelSingleton extends Template {
 		app.Logger.info(`Removed ${inactiveChannels.length} inactive channels.`);
 	}
 
-	async fetchGuestToken () {
-		const res = await app.Got({
-			url: "https://api.twitter.com/1.1/guest/activate.json",
-			method: "POST",
-			responseType: "json",
-			throwHttpErrors: false,
-			headers: {
-				Authorization: `Bearer ${this.#bearerToken}`
-			}
-		});
-
-		if (res.statusCode !== 200) {
-			return {
-				success: false,
-				message: res.body
-			};
-		}
-
-		return {
-			success: true,
-			token: res.body.guest_token
-		};
-	}
-
 	async invalidateGuestToken () {
-		this.#guestToken = null;
-		
-		const token = await this.fetchGuestToken();
+		const token = await Authenticator.fetchGuestToken();
 		if (!token.success) {
 			throw new app.Error({
 				message: "Failed to invalidate guest token",
-				args: {
-					token
-				}
+				args: token
 			});
 		}
 
@@ -337,9 +313,9 @@ module.exports = class SentinelSingleton extends Template {
 	}
 
 	async updateRateLimit () {
-		this.rateLimit--;
-		
-		if (this.rateLimit === 0 || this.rateLimit < 0) {
+		this.#rateLimit--;
+
+		if (this.#rateLimit === 0 || this.#rateLimit < 0) {
 			this.locked = true;
 		}
 	}
