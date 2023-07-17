@@ -84,13 +84,13 @@ module.exports = class SentinelSingleton extends Template {
 
 		const tf = new TimelineFetcher(userList, this.#config);
 		const timeline = await tf.fetch();
-		
+
 		const isRateLimited = timeline.every(i => i.length === 0);
 		if (isRateLimited) {
 			const data = await this.invalidateGuestToken();
 			
 			this.#config = {
-				guestToken: data.guest_token,
+				guestToken: data.token,
 				bearerToken: data.bearerToken,
 				cookies: data.cookies
 			};
