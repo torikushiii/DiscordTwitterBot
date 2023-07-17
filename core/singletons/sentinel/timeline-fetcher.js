@@ -49,9 +49,24 @@ module.exports = class TimelineFetcher {
 
 	constructor (userList, config) {
 		this.#userList = userList;
+		if (this.#userList.length === 0) {
+			throw new app.Error({ message: "No users were provided" });
+		}
+
 		this.#guestToken = config.guestToken;
+		if (!this.#guestToken) {
+			throw new app.Error({ message: "Guest token is required" });
+		}
+		
 		this.#bearer = config.bearerToken;
+		if (!this.#bearer) {
+			throw new app.Error({ message: "Bearer token is required" });
+		}
+
 		this.#cookies = config.cookies;
+		if (!this.#cookies) {
+			throw new app.Error({ message: "Cookies are required" });
+		}
 	}
 
 	async fetch () {

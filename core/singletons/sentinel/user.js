@@ -49,9 +49,24 @@ module.exports = class User {
 
 	constructor (user, config) {
 		this.#user = user;
+		if (!this.#user) {
+			throw new app.Error({ message: "User is required to fetch data" });
+		}
+
 		this.#guestToken = config.guestToken;
+		if (!this.#guestToken) {
+			throw new app.Error({ message: "Guest token is required to get user data" });
+		}
+
 		this.#bearer = config.bearerToken;
+		if (!this.#bearer) {
+			throw new app.Error({ message: "Bearer token is required to get user data" });
+		}
+
 		this.#cookies = config.cookies;
+		if (!this.#cookies) {
+			throw new app.Error({ message: "Cookies are required to get user data" });
+		}
 	}
 
 	async getUserData () {
