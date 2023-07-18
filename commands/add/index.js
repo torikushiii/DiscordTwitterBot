@@ -12,9 +12,8 @@ module.exports = {
 			};
 		}
 
-		let announceChannel;
+		let announceChannel = context.channel.guild.channels.cache.find(i => i.name === context.channel.name);
 		if (context.params.channel) {
-			// do checks if channels is text and I have permissions
 			announceChannel = context.channel.guild.channels.cache.find(i => i.id === context.params.channel);
 			if (!announceChannel) {
 				return {
@@ -22,9 +21,14 @@ module.exports = {
 					reply: "Invalid channel specified."
 				};
 			}
-		}
-		else {
-			announceChannel = context.channel.guild.channels.cache.find(i => i.name === context.channel.name);
+
+			const permissions = announceChannel.permissionsFor(app.Config.get("BOT_ID"));
+			if (permissions && !permissions.has(app.Discord.data.permissions.SendMessages)) {
+				return {
+					success: false,
+					reply: "I do not have permission to send messages in that channel."
+				};
+			}
 		}
         
 		const users = args.map(i => i.replace("@", "")).map(i => i.toLowerCase());
