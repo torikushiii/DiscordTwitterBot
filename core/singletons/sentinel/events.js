@@ -30,6 +30,9 @@ events.on("new-tweet", async (tweetData) => {
 				}
 
 				const parsedTweet = await parser(tweetData);
+				if (parsedTweet.createdAt < Date.now() - 300000) {
+					continue;
+				}
 
 				const text = `New tweet from ${userData.username}: https://twitter.com/${userData.username}/status/${parsedTweet.id}`;
 				const embeds = [
