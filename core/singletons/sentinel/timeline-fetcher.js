@@ -99,7 +99,7 @@ module.exports = class TimelineFetcher {
 
 		const userTimelines = [];
 		for (const user of this.#userList) {
-			const userTimeline = timelineEntries.filter(i => i.core.user_result.result.rest_id === user.id);
+			const userTimeline = timelineEntries.filter(i => i?.core?.user_result?.result?.rest_id === user.id);
 			userTimelines.push(userTimeline);
 		}
 
