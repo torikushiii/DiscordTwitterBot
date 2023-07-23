@@ -15,7 +15,6 @@ module.exports = class SentinelSingleton extends Template {
 	#config = {};
 	#rateLimit;
 	
-	running = false;
 	locked = false;
 
 	/**
@@ -71,11 +70,9 @@ module.exports = class SentinelSingleton extends Template {
 	}
 
 	async fetchTimeline () {
-		if (this.#setup || this.running) {
+		if (this.#setup) {
 			return;
 		}
-
-		this.running = true;
 
 		const userList = await this.getUsers();
 		if (userList.length === 0) {
@@ -97,7 +94,6 @@ module.exports = class SentinelSingleton extends Template {
 
 			this.#rateLimit = data.rateLimit;
 			this.locked = false;
-			this.running = false;
 
 			return;
 		}
@@ -145,8 +141,6 @@ module.exports = class SentinelSingleton extends Template {
 			this.#firstRun = false;
 			app.Logger.info(`Sentinel is now watching ${tweetData.length} users`);
 		}
-
-		this.running = false;
 	}
 
 	async fetchUser (username) {
@@ -245,6 +239,12 @@ module.exports = class SentinelSingleton extends Template {
 					continue;
 				}
 
+				if (userData.success === false && userData.error.code === "USER_UNAVAILABLE") {
+					app.Logger.warn(`${channel} ${userData.error.message}`);
+					this.#ignoreList.push(channel.toLowerCase());
+					continue;
+				}
+					
 				await app.Cache.setByPrefix(
 					`gql-twitter-userdata-${channel}`,
 					userData.data,

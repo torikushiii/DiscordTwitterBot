@@ -111,6 +111,16 @@ module.exports = class User {
 			};
 		}
 
+		if (data?.unavailable_reason) {
+			return {
+				success: false,
+				error: {
+					code: "USER_UNAVAILABLE",
+					message: data.unavailable_reason
+				}
+			};
+		}
+
 		return {
 			success: true,
 			data: {
