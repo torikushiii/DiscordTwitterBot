@@ -41,6 +41,7 @@ module.exports = class LoggerSingleton extends require("./template.js") {
 		error.log = console.error.bind(console);
 		error.color = "196";
 		error.enabled = true;
+		this.error = error;
 	}
 
 	log (message) { this.log(message); }
