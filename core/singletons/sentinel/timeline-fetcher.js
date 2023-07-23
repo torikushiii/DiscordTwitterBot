@@ -114,7 +114,7 @@ module.exports = class TimelineFetcher {
 		}));
 
 		const res = await app.Got({
-			url: `https://api.twitter.com/graphql/8IS8MaO-2EN6GZZZb8jF0g/UserWithProfileTweetsAndRepliesQueryV2?variables=${variables}&features=${features}`,
+			url: `https://twitter.com/i/api/graphql/8IS8MaO-2EN6GZZZb8jF0g/UserWithProfileTweetsAndRepliesQueryV2?variables=${variables}&features=${features}`,
 			responseType: "json",
 			throwHttpErrors: false,
 			headers: {
@@ -137,13 +137,22 @@ module.exports = class TimelineFetcher {
 			return { success: false };
 		}
 
-		const timelineInstruction = res.body?.data?.user_result?.result?.timeline_response?.timeline?.instructions.find(i => i.__typename === "TimelineAddEntries");
-		if (!timelineInstruction) {
-			app.Logger.error("Timeline instruction not found", res.body);
+		if (Object.keys(res.body?.data?.user_result?.result ?? {}).length === 0) {
 			return { success: false };
 		}
 
-		const tweets = timelineInstruction.entries
+		const timelineInstruction = res.body?.data?.user_result?.result?.timeline_response?.timeline?.instructions;
+		if (!timelineInstruction || (!Array.isArray(timelineInstruction) && timelineInstruction.length === 0)) {
+			return { success: false };
+		}
+
+		const tweetsInstruction = timelineInstruction.find(i => i.__typename === "TimelineAddEntries");
+		if (!tweetsInstruction) {
+			app.Logger.error("Tweet timeline instruction not found", res.body);
+			return { success: false };
+		}
+
+		const tweets = tweetsInstruction.entries
 			.map(i => i.content.content)
 			.filter(Boolean)
 			.map(i => i?.tweetResult?.result)
