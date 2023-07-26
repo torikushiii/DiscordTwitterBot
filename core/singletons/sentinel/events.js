@@ -30,7 +30,7 @@ events.on("new-tweet", async (tweetData) => {
 				}
 
 				const parsedTweet = await parser(tweetData);
-				if (parsedTweet.createdAt < Date.now() - 300000) {
+				if (Date.parse(parsedTweet.createdAt) < Date.now() - 300000) {
 					continue;
 				}
 
