@@ -244,6 +244,16 @@ module.exports = class SentinelSingleton extends Template {
 					this.#ignoreList.push(channel.toLowerCase());
 					continue;
 				}
+
+				if (!userData.data) {
+					if (userData.error.code === "RATE_LIMITED") {
+						continue;
+					}
+					
+					app.Logger.warn(`No data returned for ${channel}, ignoring`, userData);
+					this.#ignoreList.push(channel.toLowerCase());
+					continue;
+				}
 					
 				await app.Cache.setByPrefix(
 					`gql-twitter-userdata-${channel}`,
