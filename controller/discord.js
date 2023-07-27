@@ -57,18 +57,39 @@ module.exports = class DiscordController extends require("./template.js") {
 	initListeners () {
 		const client = this.client;
 
-		client.on("ready", () => {
+		client.on("ready", async () => {
 			app.Logger.info(`Logged in as ${client.user.tag}!`);
 			this.initGuilds();
-			this.client.user.setPresence({
-				status: "online",
-				activities: [
-					{
-						name: `TwitterBot | ${app.Command.prefix}help`,
-						type: ActivityType.Playing
-					}
-				]
-			});
+
+			const channelList = await app.Cache.get("twitter-channels");
+
+			const options = [
+				{
+					name: `TwitterBot | ${app.Command.prefix}help`,
+					type: ActivityType.Playing
+				},
+				{
+					name: `${channelList.length} channels`,
+					type: ActivityType.Watching
+				},
+				{
+					name: `TwitterBot | ${this.client.guilds.cache.size} servers`,
+					type: ActivityType.Playing
+				}
+			];
+
+			setInterval(() => {
+				const randomOption = options[Math.floor(Math.random() * options.length)];
+				this.client.user.setPresence({
+					status: "online",
+					activities: [
+						{
+							...randomOption
+						}
+					]
+				});
+			// every 5 minutes
+			}, 300000);
 		});
 
 		client.on("messageCreate", async (messageObject) => {
