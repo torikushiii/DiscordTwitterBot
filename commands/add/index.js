@@ -54,6 +54,14 @@ module.exports = {
 			}
 			else {
 				const data = await app.Sentinel.fetchUser(user);
+				if (data?.error?.code === "RATE_LIMITED") {
+					const message = "I am currently rate limited. Please try again later in a few minutes. If this issue persists, please open an issue on GitHub.";
+					return {
+						success: false,
+						reply: message
+					};
+				}
+
 				if (!data?.success && data?.error?.code === "NO_USER_FOUND") {
 					errors.push(user);
 					continue;
