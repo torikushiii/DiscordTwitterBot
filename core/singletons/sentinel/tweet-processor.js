@@ -4,17 +4,17 @@ const parseTweet = async (tweet) => {
 	};
 
 	const tweetObject = tweet.legacy ?? tweet;
-	const { conversation_id_str: id, user_id_str: userId, full_text: text, created_at: createdAt } = tweetObject;
+	const { id_str: id, full_text: text, created_at: createdAt } = tweetObject;
 
 	tweetData.id = id;
-	tweetData.userId = userId;
+	tweetData.userId = tweetObject.user.id_str;
 	tweetData.text = text;
 	tweetData.createdAt = createdAt;
 
-	if (tweetObject.retweeted_status_result) {
+	if (tweetObject.retweeted_status) {
 		const { screen_name } = tweetObject.entities.user_mentions[0];
-		const { legacy: retweetLegacy } = tweetObject.retweeted_status_result.result;
-		const { extended_entities: extendedEntities } = retweetLegacy;
+		const retweetData = tweetObject.retweeted_status;
+		const { extended_entities: extendedEntities } = retweetData;
 		if (extendedEntities) {
 			const { media } = extendedEntities;
 			if (media) {
@@ -30,15 +30,15 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
-		tweetData.text = `RT @${screen_name}: ${retweetLegacy.full_text}`;
+		tweetData.text = `RT @${screen_name}: ${retweetData.full_text}`;
 		tweetData.type = "retweet";
 
 		return tweetData;
 	}
-	else if (tweetObject.is_quote_status && tweet.quoted_status_result) {
-		const { legacy: quoteLegacy } = tweet.quoted_status_result.result;
-		if (quoteLegacy?.extended_entities) {
-			const { extended_entities: extendedEntities } = quoteLegacy;
+	else if (tweetObject.is_quote_status && tweet.quoted_status) {
+		const { quoted_status: quotedStatus } = tweetObject;
+		if (quotedStatus?.extended_entities) {
+			const { extended_entities: extendedEntities } = quotedStatus;
 			if (extendedEntities) {
 				const { media } = extendedEntities;
 				if (media) {
@@ -55,11 +55,9 @@ const parseTweet = async (tweet) => {
 			}
 		}
 
-		const userData = tweet.quoted_status_result.result.core.user_result.result.legacy;
-		const { screen_name } = userData;
+		const { screen_name } = tweetObject.user;
 
 		tweetData.text = `Quote @${screen_name}: ${text}`;
-
 		tweetData.type = "quote";
 
 		return tweetData;

@@ -12,7 +12,7 @@ events.on("new-tweet", async (tweetData) => {
 		return;
 	}
 
-	const userId = tweetData.core.user_result.result.rest_id;
+	const userId = tweetData.user.id_str;
 	for (const guild of guilds) {
 		const guildData = await app.Cache.getByPrefix(guild);
 

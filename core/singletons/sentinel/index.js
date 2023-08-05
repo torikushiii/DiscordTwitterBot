@@ -79,22 +79,12 @@ module.exports = class SentinelSingleton extends Template {
 			throw new app.Error({ message: "No users found" });
 		}
 
-		const tf = new TimelineFetcher(userList, this.#config);
+		const tf = new TimelineFetcher(userList);
 		const timeline = await tf.fetch();
 
 		const isRateLimited = timeline.every(i => i.length === 0);
 		if (isRateLimited) {
-			const data = await this.invalidateGuestToken();
-			
-			this.#config = {
-				guestToken: data.token,
-				bearerToken: data.bearerToken,
-				cookies: data.cookies
-			};
-
-			this.#rateLimit = data.rateLimit;
-			this.locked = false;
-
+			app.Logger.warn("All tweets returned empty, rate limited (?)");
 			return;
 		}
 
@@ -103,7 +93,7 @@ module.exports = class SentinelSingleton extends Template {
 
 	async processTweets (tweetData) {
 		for (const item of tweetData) {
-			const userId = item?.[0]?.core?.user_result?.result?.rest_id;
+			const userId = item?.[0]?.user.id_str;
 			if (!userId) {
 				continue;
 			}
@@ -112,21 +102,21 @@ module.exports = class SentinelSingleton extends Template {
 			if (!cachedUserTweets) {
 				await app.Cache.setByPrefix(
 					`twitter-timeline-${userId}`,
-					item.map(i => i.rest_id),
+					item.map(i => i.id_str),
 					{ expireAt: 0 }
 				);
 
 				continue;
 			}
 
-			const newTweets = item.filter(i => !cachedUserTweets.includes(i.rest_id));
+			const newTweets = item.filter(i => !cachedUserTweets.includes(i.id_str));
 			if (newTweets.length === 0) {
 				continue;
 			}
 
 			await app.Cache.setByPrefix(
 				`twitter-timeline-${userId}`,
-				[...cachedUserTweets, ...newTweets.map(i => i.rest_id)],
+				[...cachedUserTweets, ...newTweets.map(i => i.id_str)],
 				{ expireAt: 0 }
 			);
 
@@ -147,6 +137,19 @@ module.exports = class SentinelSingleton extends Template {
 		const user = new User(username, this.#config);
 		const userData = await user.getUserData();
 		if (userData.success === false) {
+			if (userData.error.code === "RATE_LIMITED") {
+				const data = await this.invalidateGuestToken();
+			
+				this.#config = {
+					guestToken: data.token,
+					bearerToken: data.bearerToken,
+					cookies: data.cookies
+				};
+
+				this.#rateLimit = data.rateLimit;
+				this.locked = false;
+			}
+
 			return {
 				success: false,
 				error: userData.error
