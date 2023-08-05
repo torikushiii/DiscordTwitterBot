@@ -78,6 +78,15 @@ module.exports = class DiscordController extends require("./template.js") {
 				}
 			];
 
+			this.client.user.setPresence({
+				status: "online",
+				activities: [
+					{
+						...options[0]
+					}
+				]
+			});
+			
 			setInterval(() => {
 				const randomOption = options[Math.floor(Math.random() * options.length)];
 				this.client.user.setPresence({
@@ -113,7 +122,6 @@ module.exports = class DiscordController extends require("./template.js") {
 
 			const botPermissions = messageObject.channel.permissionsFor?.(app.Config.get("BOT_ID"));
 			if (botPermissions && !botPermissions.has(PermissionFlagsBits.SendMessages)) {
-				app.Logger.warn(`Bot does not have permission to send messages in guild ${guild.name} (${guild.id})`);
 				return;
 			}
 
