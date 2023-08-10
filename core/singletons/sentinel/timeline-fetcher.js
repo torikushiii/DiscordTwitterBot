@@ -17,32 +17,36 @@ module.exports = class TimelineFetcher {
 		}
 
 		const batchSize = Math.ceil(this.#userList.length / 10);
-		const request = [];
-		const userArray = [...this.#userList];
-		while (userArray.length) {
-			const batch = userArray.splice(0, batchSize);
+		const userBatches = [];
+		for await (const batch of this.batch(this.#userList, batchSize)) {
 			const batchRequest = batch.map(i => this.fetchTimeline(i.username));
-			request.push(Promise.all(batchRequest));
+			userBatches.push(Promise.all(batchRequest));
 		}
 
-		const response = await Promise.all(request);
+		const response = await Promise.all(userBatches);
+		const timelineEntries = response
+			.flat()
+			.filter(i => i.success)
+			.flatMap(i => i.entries);
 
-		const timelineEntries = [];
-		for (const result of response) {
-			for (const entry of result) {
-				if (entry.success) {
-					timelineEntries.push(...entry.entries);
-				}
-			}
-		}
-
-		const userTimelines = [];
-		for (const user of this.#userList) {
-			const userTimeline = timelineEntries.filter(i => i.user.id_str === user.id);
-			userTimelines.push(userTimeline);
-		}
+		const userTimelines = this.#userList.map(i => {
+			const userTimeline = timelineEntries.filter(entry => entry.user.id_str === i.id);
+			return userTimeline;
+		});
 
 		return userTimelines;
+	}
+
+	async *batch (iterable, size) {
+		const iterator = iterable[Symbol.iterator]();
+		let nextBatch = await Promise.all(
+			Array.from({ length: size }, () => iterator.next())
+		);
+
+		while (nextBatch.every(({ done }) => !done)) {
+			yield nextBatch.map(({ value }) => value);
+			nextBatch = await Promise.all(Array.from({ length: size }, () => iterator.next()));
+		}
 	}
 
 	async fetchTimeline (username) {
