@@ -39,6 +39,10 @@ module.exports = class SentinelSingleton extends Template {
 			{
 				time: "* * * * *",
 				fn: this.removeInactiveChannels.bind(this)
+			},
+			{
+				time: "*/10 * * * *",
+				fn: this.updateAuth.bind(this)
 			}
 		];
 
@@ -323,6 +327,23 @@ module.exports = class SentinelSingleton extends Template {
 		}
 
 		return token;
+	}
+
+	async updateAuth () {
+		const auth = await Authenticator.fetchGuestToken();
+		if (!auth.success) {
+			throw new app.Error({
+				message: "Failed to update bearer token",
+				args: auth
+			});
+		}
+
+		this.#rateLimit = auth.rateLimit;
+		this.#config = {
+			guestToken: auth.token,
+			bearerToken: auth.bearerToken,
+			cookies: auth.cookies
+		};
 	}
 
 	async updateRateLimit () {
