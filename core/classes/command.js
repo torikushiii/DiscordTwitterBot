@@ -292,19 +292,19 @@ module.exports = class Command extends require("./template.js") {
 			throw new app.Error({ message: "Invalid argument array" });
 		}
 
+		const command = Command.get(identifier);
+		if (!command) {
+			return {
+				success: false,
+				reason: "Command not found"
+			};
+		}
+
 		const isAllowed = Command.isAllowed(channelData, userData);
 		if (!isAllowed) {
 			return {
 				success: false,
 				reply: "You do not have permission to use this command"
-			};
-		}
-
-		const command = Command.get(identifier);
-		if (!command) {
-			return {
-				success: false,
-				reply: "Command not found"
 			};
 		}
         
