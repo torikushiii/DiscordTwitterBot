@@ -2,6 +2,7 @@ module.exports = (async () => {
 	const gotModule = await import("got");
 	const got = gotModule.default.extend({
 		responseType: "json",
+		http2: true,
 		retry: {
 			limit: 2
 		},
