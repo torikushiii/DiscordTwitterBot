@@ -16,6 +16,8 @@ module.exports = class TimelineFetcher {
 			throw new app.Error({ message: "User list must be an array" });
 		}
 
+		await this.getUserPriority();
+
 		const batchSize = Math.ceil(this.#userList.length / 10);
 		const userBatches = [];
 		for await (const batch of this.batch(this.#userList, batchSize)) {
@@ -45,8 +47,31 @@ module.exports = class TimelineFetcher {
 
 		while (nextBatch.every(({ done }) => !done)) {
 			yield nextBatch.map(({ value }) => value);
-			nextBatch = await Promise.all(Array.from({ length: size }, () => iterator.next()));
+			nextBatch = await Promise.all(
+				Array.from({ length: size }, () => iterator.next())
+			);
 		}
+	}
+
+	async getUserPriority () {
+		if (this.#userList.length === 0) {
+			throw new app.Error({ message: "No users found" });
+		}
+
+		const priority = [];
+		for (const user of this.#userList) {
+			const timelineData = await app.Cache.get(`twitter-timeline-${user.id}`);
+			if (timelineData) {
+				priority.push({
+					id: user.id,
+					username: user.username,
+					count: timelineData.length
+				});
+			}
+		}
+
+		priority.sort((a, b) => b.count - a.count);
+		this.#userList = priority;
 	}
 
 	async fetchTimeline (username) {
