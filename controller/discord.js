@@ -283,6 +283,9 @@ module.exports = class DiscordController extends require("./template.js") {
 					}
 				});
 			}
+			else if (e.message.includes("connection timeout")) {
+				await this.send(message, channel, options);
+			}
 			else {
 				throw new app.Error({
 					message: "Unknown error",
