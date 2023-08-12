@@ -113,7 +113,12 @@ module.exports = class SentinelSingleton extends Template {
 				continue;
 			}
 
-			const newTweets = item.filter(i => !cachedUserTweets.includes(i.id_str));
+			const cachedTweetsHash = {};
+			for (const tweet of cachedUserTweets) {
+				cachedTweetsHash[tweet] = true;
+			}
+
+			const newTweets = item.filter(i => !cachedTweetsHash[i.id_str]);
 			if (newTweets.length === 0) {
 				continue;
 			}
