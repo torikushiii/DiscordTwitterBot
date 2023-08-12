@@ -35,10 +35,11 @@ module.exports = {
 		const guildData = await app.Cache.getByPrefix(`discord-guilds-${context.channel.guild.id}`);
 		const { channels } = guildData;
 
-		if (channels.length >= 100) {
+		const limit = app.Config.get("LIMIT");
+		if (channels.length >= limit) {
 			return {
 				success: false,
-				reply: "Currently, all guilds are limited to 100 users, for now."
+				reply: `Currently, all guilds are limited to ${limit} users, for now.`
 			};
 		}
 
