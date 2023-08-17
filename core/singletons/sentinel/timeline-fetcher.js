@@ -76,7 +76,7 @@ module.exports = class TimelineFetcher {
 
 	async fetchTimeline (username) {
 		const res = await app.Got({
-			url: `https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}?showReplies=true`,
+			url: `https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}?showReplies=false`,
 			responseType: "text",
 			throwHttpErrors: false,
 			headers: {
