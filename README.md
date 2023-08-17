@@ -1,4 +1,4 @@
-## All features should be working as expected, if you encounter any bugs, you can open an issue.
+## Twitter/X broke the bot, I'll try to fix it when I found a way to do it.
 
 # DiscordTwitterBot
 
