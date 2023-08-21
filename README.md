@@ -1,4 +1,4 @@
-## Twitter/X broke the bot, I'll try to fix it when I found a way to do it.
+## Got a temporary workaround for the guest authentication, and I don't know how the rate-limit will handle this. But all features should be working now.
 
 # DiscordTwitterBot
 
