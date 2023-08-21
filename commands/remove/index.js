@@ -16,7 +16,8 @@ module.exports = {
 		const removed = [];
 		const skipped = [];
 
-		for (const user of args) {
+		for (const userArgs of args) {
+			const user = userArgs.toLowerCase();
 			const exists = channels.find(i => i.username === user);
 			if (exists) {
 				removed.push(user);
