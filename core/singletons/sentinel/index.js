@@ -40,32 +40,32 @@ module.exports = class SentinelSingleton extends Template {
 				time: "* * * * *",
 				fn: this.removeInactiveChannels.bind(this)
 			},
-			{
-				time: "*/10 * * * *",
-				fn: this.updateAuth.bind(this)
-			}
+			// {
+			// 	time: "*/10 * * * *",
+			// 	fn: this.updateAuth.bind(this)
+			// }
 		];
 
 		this.init();
 	}
 
 	async init () {
-		const auth = await Authenticator.fetchGuestToken();
-		if (!auth.success) {
-			throw new app.Error({
-				message: "Failed to fetch guest token",
-				args: auth
-			});
-		}
+		// const auth = await Authenticator.fetchGuestToken();
+		// if (!auth.success) {
+		// 	throw new app.Error({
+		// 		message: "Failed to fetch guest token",
+		// 		args: auth
+		// 	});
+		// }
 
 		this.#setup = false;
-		this.#rateLimit = auth.rateLimit;
+		// this.#rateLimit = auth.rateLimit;
 
-		this.#config = {
-			guestToken: auth.token,
-			bearerToken: auth.bearerToken,
-			cookies: auth.cookies
-		};
+		// this.#config = {
+		// 	guestToken: auth.token,
+		// 	bearerToken: auth.bearerToken,
+		// 	cookies: auth.cookies
+		// };
 
 		for (const cron of this.crons) {
 			const job = new CronJob(cron.time, cron.fn);

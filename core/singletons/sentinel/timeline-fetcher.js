@@ -76,12 +76,13 @@ module.exports = class TimelineFetcher {
 
 	async fetchTimeline (username) {
 		const res = await app.Got({
-			url: `https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}?showReplies=false`,
+			url: `https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`,
 			responseType: "text",
 			throwHttpErrors: false,
 			headers: {
 				"X-Twitter-Active-User": "yes",
-				Referer: `https://twitter.com/`
+				Referer: `https://twitter.com/`,
+				Cookie: app.Config.get("COOKIE")
 			}
 		});
 
