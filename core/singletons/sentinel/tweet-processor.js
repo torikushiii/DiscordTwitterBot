@@ -29,8 +29,19 @@ const parseTweet = async (tweet) => {
 			const mediaData = media.map(({ type, media_url_https: url }) => ({ type, url }));
 			tweetData.media = mediaData;
 		}
-		tweetData.text = tweetObject.quoted_status.full_text;
+
+		const username = tweetObject.quoted_status.user.screen_name;
+		tweetData.text = `Quote @${username}: ${tweetObject.text}`;
 		tweetData.type = "quote";
+	}
+
+	if (!tweetData.media) {
+		const { extended_entities: extendedEntities } = tweetObject;
+		const media = extendedEntities?.media;
+		if (media) {
+			const mediaData = media.map(({ type, media_url_https: url }) => ({ type, url }));
+			tweetData.media = mediaData;
+		}
 	}
 
 	return tweetData;
