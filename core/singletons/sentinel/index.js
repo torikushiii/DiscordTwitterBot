@@ -9,7 +9,6 @@ const channelList = require("../../../channels.json");
 
 module.exports = class SentinelSingleton extends Template {
 	#firstRun = true;
-	#setup = true;
 	#ignoreList = [];
 	
 	#config = {};
@@ -39,34 +38,13 @@ module.exports = class SentinelSingleton extends Template {
 			{
 				time: "* * * * *",
 				fn: this.removeInactiveChannels.bind(this)
-			},
-			// {
-			// 	time: "*/10 * * * *",
-			// 	fn: this.updateAuth.bind(this)
-			// }
+			}
 		];
 
 		this.init();
 	}
 
 	async init () {
-		// const auth = await Authenticator.fetchGuestToken();
-		// if (!auth.success) {
-		// 	throw new app.Error({
-		// 		message: "Failed to fetch guest token",
-		// 		args: auth
-		// 	});
-		// }
-
-		this.#setup = false;
-		// this.#rateLimit = auth.rateLimit;
-
-		// this.#config = {
-		// 	guestToken: auth.token,
-		// 	bearerToken: auth.bearerToken,
-		// 	cookies: auth.cookies
-		// };
-
 		for (const cron of this.crons) {
 			const job = new CronJob(cron.time, cron.fn);
 			job.start();
@@ -74,10 +52,6 @@ module.exports = class SentinelSingleton extends Template {
 	}
 
 	async fetchTimeline () {
-		if (this.#setup) {
-			return;
-		}
-
 		const userList = await this.getUsers();
 		if (userList.length === 0) {
 			throw new app.Error({ message: "No users found" });
@@ -243,7 +217,7 @@ module.exports = class SentinelSingleton extends Template {
 		for (const channel of channels) {
 			let userData = await app.Cache.get(`gql-twitter-userdata-${channel}`);
 			if (!userData) {
-				const user = new User(channel, this.#config);
+				const user = new User(channel);
 				userData = await user.getUserData();
 				if (userData.success === false && userData.error.code === "NO_USER_FOUND") {
 					app.Logger.warn(`User ${channel} not found, ignoring`);
