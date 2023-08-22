@@ -59,6 +59,8 @@ module.exports = class DiscordController extends require("./template.js") {
 
 		client.on("ready", async () => {
 			app.Logger.info(`Logged in as ${client.user.tag}!`);
+			app.Logger.info(`Connected to ${client.guilds.cache.size} servers`);
+			
 			this.initGuilds();
 
 			const channelList = await app.Cache.get("twitter-channels");
