@@ -49,7 +49,7 @@ const parseTweet = async (tweet) => {
 		}
 
 		const username = tweetObject.quoted_status.user.screen_name;
-		const text = tweetObject.text.full_text.replace(/https:\/\/t.co\/[a-zA-Z0-9]+/g, "");
+		const text = tweetObject?.text?.full_text?.replace?.(/https:\/\/t.co\/[a-zA-Z0-9]+/g, "") ?? tweetObject.text;
 		
 		tweetData.text = `Quote @${username}: ${text}`;
 		tweetData.type = "quote";
