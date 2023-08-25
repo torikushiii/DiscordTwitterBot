@@ -5,7 +5,7 @@ const parseTweet = async (tweet) => {
 	const tweetData = {
 		id,
 		userId: tweetObject.user.id_str,
-		text,
+		text: text.replace(/https:\/\/t.co\/[a-zA-Z0-9]+/g, ""),
 		createdAt,
 		type: "tweet"
 	};
@@ -19,7 +19,9 @@ const parseTweet = async (tweet) => {
 			const mediaData = media.map(({ type, media_url_https: url }) => ({ type, url }));
 			tweetData.media = mediaData;
 		}
-		tweetData.text = `RT @${screen_name}: ${retweetData.full_text}`;
+
+		const text = retweetData.full_text.replace(/https:\/\/t.co\/[a-zA-Z0-9]+/g, "");
+		tweetData.text = `RT @${screen_name}: ${text}`;
 		tweetData.type = "retweet";
 	}
 	else if (tweetObject.is_quote_status && tweet.quoted_status) {
@@ -31,7 +33,9 @@ const parseTweet = async (tweet) => {
 		}
 
 		const username = tweetObject.quoted_status.user.screen_name;
-		tweetData.text = `Quote @${username}: ${tweetObject.text}`;
+		const text = tweetObject.text.full_text.replace(/https:\/\/t.co\/[a-zA-Z0-9]+/g, "");
+		
+		tweetData.text = `Quote @${username}: ${text}`;
 		tweetData.type = "quote";
 	}
 
