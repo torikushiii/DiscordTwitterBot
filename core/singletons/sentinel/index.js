@@ -58,7 +58,7 @@ module.exports = class SentinelSingleton extends Template {
 		}
 
 		const tf = new TimelineFetcher(userList);
-		const timeline = await tf.fetch();
+		const timeline = await tf.fetch({ firstRun: this.#firstRun });
 
 		const isRateLimited = timeline.every(i => i.length === 0);
 		if (isRateLimited) {
