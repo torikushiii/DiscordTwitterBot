@@ -1,11 +1,11 @@
-## Got a temporary workaround for the guest authentication, and I don't know how the rate-limit will handle this. But all features should be working now.
-
 # DiscordTwitterBot
 
 This is a working prototype of fetching "real-time" tweets since the new Twitter Streaming API is now a paid service. Expect to see some bugs, errors, and a lot of code that needs to be refactored.
 
 # Invite
-If you want to try it out, you can add the bot to your server by clicking [here](https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456).
+<a href="https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456"><img src="https://img.shields.io/static/v1?label=Invite%20Me&message=Twitter Bot%239462&plastic&color=5865F2&logo=discord"></a>
+
+If you want to try it out, you can add the bot to your server by clicking the badge or [here](https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456).
 
 # Features
 - Fetching almost real-time tweets from a user (approx. 5 seconds delay from the time the tweet was posted)
