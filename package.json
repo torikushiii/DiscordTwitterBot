@@ -21,11 +21,13 @@
     "eslint-plugin-unicorn": "^48.0.1"
   },
   "dependencies": {
+    "chalk": "4.1.2",
     "cron": "^2.4.1",
-    "debug": "^4.3.4",
     "discord.js": "^14.13.0",
     "got": "^13.0.0",
-    "ioredis": "^5.3.2"
+    "ioredis": "^5.3.2",
+    "mongodb": "^5.8.1",
+    "winston": "^3.10.0"
   },
   "repository": {
     "type": "git",
