@@ -6,10 +6,11 @@ module.exports = (async function () {
 		"classes/config",
 		"classes/command",
 
+		"singletons/logger",
+		"singletons/query",
 		"singletons/got",
         
 		"object/error",
-		"singletons/logger",
 		"singletons/cache",
 		"singletons/sentinel"
 	];
@@ -27,7 +28,7 @@ module.exports = (async function () {
 			switch (name) {
 				case "logger": {
 					const Component = require("./singletons/logger.js");
-					app.Logger = Component.singleton();
+					app.Logger = Component;
 					break;
 				}
 
@@ -46,6 +47,12 @@ module.exports = (async function () {
 				case "got": {
 					const Component = await require("./singletons/got.js");
 					app.Got = Component;
+					break;
+				}
+
+				case "query": {
+					const Component = require("./singletons/query").singleton();
+					app.Query = Component.client();
 					break;
 				}
 			}
