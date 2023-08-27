@@ -50,6 +50,10 @@ class CustomError extends globalThis.Error {
 		});
 	}
 
+	get simpleMessage () {
+		return this.#messageDescriptor.value;
+	}
+
 	get args () { return this.#args; }
 	get timestamp () { return this.#timestamp; }
 	get date () { return new Date(this.#timestamp); }

@@ -26,7 +26,7 @@ events.on("new-tweet", async (tweetData) => {
 
 			const userData = await app.User.get(channel.username);
 			if (!userData) {
-				app.Logger.warn(`User ${channel.username} not found (?)`);
+				app.Logger.warn("EventManager", `User ${channel.username} not found (?)`);
 				continue;
 			}
 

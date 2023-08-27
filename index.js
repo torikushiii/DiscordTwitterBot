@@ -1,4 +1,5 @@
 (async function () {
+	require("./db-access.js");
 	const init = require("./core/index.js");
 	globalThis.app = await init();
 
@@ -10,7 +11,7 @@
 		Controller = require("./controller/discord.js");
 	}
 	catch (e) {
-		app.Logger.log(e);
+		console.error(e);
 		process.exit(1);
 	}
 
@@ -18,7 +19,7 @@
 		app.Discord = new Controller();
 	}
 	catch (e) {
-		app.Logger.log(e);
+		console.error(e);
 		process.exit(1);
 	}
 

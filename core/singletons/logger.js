@@ -1,53 +1,98 @@
-const Debug = require("debug");
+const { createLogger, format, transports, addColors } = require("winston");
+const { combine, colorize, timestamp, printf } = format;
+const chalk = require("chalk");
 
-module.exports = class LoggerSingleton extends require("./template.js") {
-	/**
-	 * @returns {LoggerSingleton}
-	 */
-	static singleton () {
-		if (!LoggerSingleton.module) {
-			LoggerSingleton.module = new LoggerSingleton();
-		}
+const levels = {
+	colors: {
+		info: "green",
+		error: "underline bold red",
+		debug: "bold magenta",
+		warn: "yellow"
+	}
+};
 
-		return LoggerSingleton.module;
+const logFormat = printf(({ level, message, timestamp }) => {
+	const sendTarget = `<${level}:${chalk.gray(message.type)}> ${message.text}`;
+	return `${chalk.magenta(timestamp)} ${sendTarget}`;
+});
+
+const winston = createLogger({
+	format: combine(
+		format((info) => {
+			info.level = info.level.toUpperCase();
+			return info;
+		})(),
+		timestamp({
+			format: "HH:mm:ss"
+		}),
+		colorize(),
+		logFormat
+	),
+	transports: [new transports.Console({
+		stderrLevels: ["error"],
+		colorize: true
+	})]
+});
+
+addColors(levels.colors);
+
+if (process.env.loglevel) {
+	winston.transports[0].level = process.env.loglevel;
+	winston.info(`Log level set to ${winston.transports[0].level}`);
+}
+else {
+	winston.transports[0].level = "info";
+	winston.info({ type: "LogClient", text: "Log level set to info" });
+}
+
+const logObject = {};
+const info = (type, message) => {
+	if (!type) {
+		type = "info";
 	}
 
-	/**
-	 * @hideconstructor
-	 */
-	constructor () {
-		super();
+	logObject.type = type;
+	logObject.text = message;
 
-		const logger = Debug("app");
+	winston.info(logObject);
+};
 
-		const log = logger.extend("[ LOG ]:");
-		log.log = console.log.bind(console);
-		log.enabled = true;
-		this.log = log;
-
-		const info = logger.extend("[ INFO ]:");
-		info.log = console.info.bind(console);
-		info.color = log.color;
-		info.enabled = true;
-		this.info = info;
-
-		const warn = logger.extend("[ WARN ]:");
-		warn.log = console.warn.bind(console);
-		warn.color = "9";
-		warn.enabled = true;
-		this.warn = warn;
-
-		const error = logger.extend("[ ERROR ]:");
-		error.log = console.error.bind(console);
-		error.color = "196";
-		error.enabled = true;
-		this.error = error;
+const error = (type, message) => {
+	if (!type) {
+		type = "error";
 	}
 
-	log (message) { this.log(message); }
-	info (message) { this.info(message); }
-	warn (message) { this.warn(message); }
-	error (message) { this.error(message); }
+	logObject.type = type;
+	logObject.text = message;
 
-	get modulePath () { return "logger"; }
+	winston.error(logObject);
+};
+
+const debug = (type, message) => {
+	if (!type) {
+		type = "debug";
+	}
+
+	logObject.type = type;
+	logObject.text = message;
+
+	winston.debug(logObject);
+};
+
+const warn = (type, message) => {
+	if (!type) {
+		type = "warn";
+	}
+
+	logObject.type = type;
+	logObject.text = message;
+
+	winston.warn(logObject);
+};
+
+module.exports = {
+	info,
+	error,
+	debug,
+	warn
 };

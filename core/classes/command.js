@@ -16,7 +16,7 @@ module.exports = class Command extends require("./template.js") {
 
 		this.name = data.name;
 		if (typeof this.name !== "string" || this.name.length === 0) {
-			app.Logger.error("Command name must be a string and not empty", this.name);
+			console.error("Command name must be a string and not empty", this.name);
 			this.name = "";
 		}
 
@@ -30,7 +30,7 @@ module.exports = class Command extends require("./template.js") {
 				this.code = eval(data.code);
 			}
 			catch (e) {
-				app.Logger.error(`Failed to compile code for ${this.name}`, e);
+				console.error(`Failed to compile code for ${this.name}`, e);
 				this.code = () => ({
 					success: false,
 					reply: "Failed to compile code"
@@ -81,20 +81,20 @@ module.exports = class Command extends require("./template.js") {
 
 	static async validate () {
 		if (Command.data.length === 0) {
-			app.Logger.warn("No command found");
+			console.warn("No command found");
 		}
 
 		if (!app.Config) {
-			app.Logger.warn("Config is not initialized");
+			console.warn("Config is not initialized");
 		}
 		else if (Command.prefix === null) {
-			app.Logger.warn("Command prefix is not set");
+			console.warn("Command prefix is not set");
 		}
 
 		const names = Command.data.flatMap(i => i.name);
 		const duplicates = names.filter((i, index) => names.indexOf(i) !== index);
 		if (duplicates.length > 0) {
-			app.Logger.warn("Duplicate command name found", duplicates);
+			console.warn("Duplicate command name found", duplicates);
 		}
 	}
 
@@ -304,7 +304,7 @@ module.exports = class Command extends require("./template.js") {
 		if (!isAllowed) {
 			return {
 				success: false,
-				reply: "You do not have permission to use this command"
+				reason: "not-allowed"
 			};
 		}
         
@@ -333,14 +333,104 @@ module.exports = class Command extends require("./template.js") {
 		const context = contextOptions;
 
 		try {
+			const start = process.hrtime.bigint();
 			execution = await command.code(context, ...argumentArray);
+			const end = process.hrtime.bigint();
+
+			let result = null;
+			if (execution?.reply) {
+				result = execution.reply.trim().slice(0, 2000);
+			}
+
+			app.Query.collection("command-execution").insertOne({
+				id: userData.id,
+				command: command.name,
+				platform: options.platform.id,
+				execution: new Date(),
+				channel: channelData?.id ?? null,
+				success: true,
+				invocation: identifier,
+				arguments: JSON.stringify(argumentArray.filter(Boolean)),
+				result,
+				executionTime: Number(end - start) / 1000000
+			});
 		}
 		catch (e) {
-			const errorId = await app.Sentinel.generateErrorId(e, channelData.guildId);
-			execution = {
-				success: false,
-				reply: `An error occurred while executing this command. - ${errorId}`
+			let origin = "Internal";
+			let errorContext;
+			const loggingContext = {
+				user: userData.id,
+				command: command.name,
+				invocation: identifier,
+				channel: channelData?.id ?? null,
+				platform: options.platform.id,
+				params: context.params ?? {}
 			};
+
+			if (e instanceof app.Error.GenericRequest) {
+				origin = "External";
+				const { hostname, statusCode, statusMessage } = e.args;
+				errorContext = {
+					type: "Command request error",
+					hostname,
+					message: e.simpleMessage,
+					statusCode,
+					statusMessage
+				};
+			}
+
+			const errorID = await app.Query.collection("error").countDocuments() + 1;
+			await app.Query.collection("error").insertOne({
+				id: errorID,
+				origin,
+				context: loggingContext,
+				errorContext: errorContext ?? {
+					type: "Unknown",
+					message: e.message,
+					stack: e.stack
+				},
+				command: command.name,
+				platform: options.platform.id,
+				invocation: identifier,
+				channel: channelData?.id ?? null,
+				user: userData.id,
+				error: e.message,
+				stack: e.stack
+			});
+
+			if (e instanceof app.Error.GenericRequest) {
+				const { hostname } = errorContext;
+				execution = {
+					success: false,
+					reason: "generic-request-error",
+					reply: `Third party service ${hostname} failed! 🚨 (ID ${errorID})`
+				};
+			}
+			else if (e instanceof app.Got.RequestError) {
+				execution = {
+					success: false,
+					reason: "got-error",
+					reply: `Third party service failed! 🚨 (ID ${errorID})`
+				};
+			}
+			else {
+				const prettify = (errorID) => {
+					const error = `Error ID ${errorID} -`;
+					const message = [
+						"An error has occurred!",
+						`Use {prefix}suggest ${errorID} and how do you use the command`,
+						"to report this error!"
+					].join(" ");
+
+					return `${error} ${message}`;
+				};
+
+				execution = {
+					success: false,
+					reason: "error",
+					reply: `An error occurred! 🚨 ${prettify(errorID)}`
+				};
+			}
 		}
 
 		if (!execution) {

@@ -58,8 +58,8 @@ module.exports = class DiscordController extends require("./template.js") {
 		const client = this.client;
 
 		client.on("ready", async () => {
-			app.Logger.info(`Logged in as ${client.user.tag}!`);
-			app.Logger.info(`Connected to ${client.guilds.cache.size} servers`);
+			app.Logger.info("DiscordController", `Logged in as ${client.user.tag}!`);
+			app.Logger.info("DiscordController", `Connected to ${client.guilds.cache.size} servers`);
 			
 			this.initGuilds();
 
@@ -159,7 +159,7 @@ module.exports = class DiscordController extends require("./template.js") {
 				return;
 			}
 
-			app.Logger.error(error);
+			console.error(error);
 			this.restart();
 		});
 	}
@@ -197,7 +197,7 @@ module.exports = class DiscordController extends require("./template.js") {
 			const guild = guilds.get(guildId);
 			if (!guild) {
 				await app.Cache.delete(cachedGuild);
-				app.Logger.info(`Left guild (${guildId}) ${cachedGuild.name}`);
+				app.Logger.info("DiscordController", `Left guild (${guildId}) ${cachedGuild.name}`);
 
 				continue;
 			}
@@ -234,7 +234,7 @@ module.exports = class DiscordController extends require("./template.js") {
 				channels: []
 			};
 
-			app.Logger.info(`Joined guild (${id}) ${name}`);
+			app.Logger.info("DiscordController", `Joined guild (${id}) ${name}`);
 
 			await app.Cache.setByPrefix(
 				`discord-guilds-${id}`,
@@ -248,7 +248,7 @@ module.exports = class DiscordController extends require("./template.js") {
 		const { id } = guild;
 		await app.Cache.delete(`discord-guilds-${id}`);
 
-		app.Logger.info(`Left guild (${id}) ${guild.name}`);
+		app.Logger.info("DiscordController", `Left guild (${id}) ${guild.name}`);
 	}
 	
 	async send (message, channel, options = {}) {

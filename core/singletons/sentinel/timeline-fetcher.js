@@ -89,7 +89,7 @@ module.exports = class TimelineFetcher {
 		const data = JSON.parse(nextData[1]);
 		const timeline = data?.props?.pageProps?.timeline?.entries;
 		if (!timeline) {
-			app.Logger.error("Timeline not found", { username, res: res.body });
+			app.Logger.error("SentinelTimelineFetcher", `Timeline not found ${username} res: ${res.body}`);
 			return { success: false };
 		}
 

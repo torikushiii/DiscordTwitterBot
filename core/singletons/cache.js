@@ -63,7 +63,7 @@ module.exports = class CacheSingleton extends require("./template.js") {
 		this.#server = new Redis(configuration);
 		this.#active = true;
 
-		app.Logger.info("Connected to Redis.");
+		app.Logger.info("CacheManager", "Connected to Redis");
 
 		this.#server.info().then(data => {
 			const versionData = data.split("\n").find(i => i.startsWith("redis_version"));
@@ -71,7 +71,7 @@ module.exports = class CacheSingleton extends require("./template.js") {
 				this.#version = versionData.split(":")[1].split(".").map(Number);
 			}
 			else {
-				app.Logger.warn("Could not find Redis version!", { info: data });
+				app.Logger.warn("CacheManager", `Could not determine Redis version from ${data}`);
 			}
 		});
 	}
