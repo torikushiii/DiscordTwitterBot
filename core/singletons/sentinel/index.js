@@ -282,42 +282,5 @@ module.exports = class SentinelSingleton extends Template {
 		app.Logger.info("SentinelModule", `Removed ${inactiveChannels.length} inactive channels.`);
 	}
 
-	async generateErrorId (e, guildId) {
-		const id = await app.Cache.get("error-id");
-		if (!id) {
-			await app.Cache.set({
-				key: "error-id",
-				value: [
-					{
-						id: 1,
-						source: guildId,
-						message: e.message,
-						stack: e.stack
-					}
-				],
-				expiry: 0
-			});
-
-			return 1;
-		}
-
-		const newId = id.length + 1;
-		await app.Cache.set({
-			key: "error-id",
-			value: [
-				...id,
-				{
-					id: newId,
-					source: guildId,
-					message: e.message,
-					stack: e.stack
-				}
-			],
-			expiry: 0
-		});
-
-		return newId;
-	}
-
 	get modulePath () { return "sentinel"; }
 };
