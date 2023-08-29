@@ -283,10 +283,19 @@ module.exports = class SentinelSingleton extends Template {
 			let userData = await app.User.get(channel);
 			if (!userData) {
 				userData = await this.fetchUser(channel);
-				if (userData.success === false && userData.error.code === "NO_USER_FOUND") {
+				if (userData.success === false && userData?.error) {
+					app.Logger.warn("SentinelModule", `${channel} ${JSON.stringify(userData.error)}`);
 					this.#ignoreList.push(channel.toLowerCase());
 					continue;
 				}
+				if (userData.success === false && userData?.error?.code === "NO_USER_FOUND") {
+					this.#ignoreList.push(channel.toLowerCase());
+					continue;
+				}
+			}
+
+			if (!userData) {
+				continue;
 			}
 
 			data.push(userData.username.toLowerCase());
