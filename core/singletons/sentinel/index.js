@@ -9,12 +9,11 @@ const channelList = require("../../../channels.json");
 module.exports = class SentinelSingleton extends Template {
 	#firstRun = true;
 	#ignoreList = [];
-	
-	#config = {};
-	#rateLimit;
-	
-	locked = false;
 
+	ignoreListExpiration = 300_000;
+	// eslint-disable-next-line no-return-assign
+	ignoredListExpirationInterval = setInterval(() => this.#ignoreList = [], this.ignoreListExpiration);
+	
 	/**
      * @returns {SentinelSingleton}
      */
@@ -37,6 +36,10 @@ module.exports = class SentinelSingleton extends Template {
 			{
 				time: "* * * * *",
 				fn: this.removeInactiveChannels.bind(this)
+			},
+			{
+				time: "*/15 * * * *",
+				fn: this.checkForMissingChannels.bind(this)
 			}
 		];
 
@@ -116,7 +119,7 @@ module.exports = class SentinelSingleton extends Template {
 	}
 
 	async fetchUser (username) {
-		const user = new User(username, this.#config);
+		const user = new User(username);
 		const userData = await user.getUserData();
 		if (userData.success === false) {
 			return {
@@ -244,6 +247,62 @@ module.exports = class SentinelSingleton extends Template {
 		}
 
 		return users;
+	}
+
+	async checkForMissingChannels () {
+		const cachedChannels = await this.getUsers({ usernameOnly: true });
+		const guilds = await app.Cache.getKeysByPrefix("discord-guilds-*");
+		if (guilds.length === 0) {
+			return;
+		}
+
+		const allChannels = [];
+		for (const guild of guilds) {
+			const guildData = await app.Cache.getByPrefix(guild);
+			const { channels } = guildData;
+			if (channels.length === 0) {
+				continue;
+			}
+
+			allChannels.push(channels.map(i => i.username));
+		}
+
+		const channels = allChannels.flat();
+		const missingChannels = channels.filter(i => !cachedChannels.includes(i));
+
+		if (missingChannels.length === 0) {
+			return;
+		}
+
+		const data = [];
+		for (const channel of missingChannels) {
+			if (this.#ignoreList.includes(channel.toLowerCase())) {
+				continue;
+			}
+
+			let userData = await app.User.get(channel);
+			if (!userData) {
+				userData = await this.fetchUser(channel);
+				if (userData.success === false && userData.error.code === "NO_USER_FOUND") {
+					this.#ignoreList.push(channel.toLowerCase());
+					continue;
+				}
+			}
+
+			data.push(userData.username.toLowerCase());
+		}
+
+		if (data.length === 0) {
+			return;
+		}
+
+		await app.Cache.setByPrefix(
+			"twitter-channels",
+			[...cachedChannels, ...data],
+			{ expireAt: 0 }
+		);
+
+		app.Logger.info("SentinelModule", `Added ${data.length} missing channels.`);
 	}
 
 	async removeInactiveChannels () {
