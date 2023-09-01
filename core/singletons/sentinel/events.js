@@ -51,13 +51,22 @@ events.on("new-tweet", async (tweetData) => {
 						text: "Twitter",
 						icon_url: "https://i.imgur.com/pl2r3ng.png"
 					}
-				},
-				...(parsedTweet?.media?.map((media) => ({
-					url: "https://twitter.com/",
-					image: { url: media.url }
-				})) || [])
+				}
 			];
 
+			const media = parsedTweet.media;
+			if (media) {
+				if (media.length === 1) {
+					embeds[0].image = { url: media[0].url };
+				}
+				else {
+					embeds.push(...media.map(({ type, url }) => ({
+						url: "https://twitter.com/",
+						image: { url }
+					})));
+				}
+			}
+				
 			await app.Discord.send(text, { id: channel.channelId }, { embeds });
 		}
 	}
