@@ -16,15 +16,7 @@ const parseTweet = async (tweet) => {
 		const { extended_entities: extendedEntities } = retweetData;
 		const media = extendedEntities?.media;
 		if (media) {
-			const mediaData = media.map(({ type, media_url_https: url }) => {
-				if (type === "photo") {
-					const originalUrl = url.replace(/\.jpg$/, "");
-					return { type, url: `${originalUrl}?format=jpg&name=orig` };
-				}
-
-				return { type, url };
-			});
-
+			const mediaData = media.map(({ type, media_url_https: url }) => ({ type, url }));
 			tweetData.media = mediaData;
 		}
 
@@ -36,15 +28,7 @@ const parseTweet = async (tweet) => {
 		const { extended_entities: extendedEntities } = tweetObject.quoted_status;
 		const media = extendedEntities?.media;
 		if (media) {
-			const mediaData = media.map(({ type, media_url_https: url }) => {
-				if (type === "photo") {
-					const originalUrl = url.replace(/\.jpg$/, "");
-					return { type, url: `${originalUrl}?format=jpg&name=orig` };
-				}
-
-				return { type, url };
-			});
-			
+			const mediaData = media.map(({ type, media_url_https: url }) => ({ type, url }));
 			tweetData.media = mediaData;
 		}
 
@@ -59,15 +43,7 @@ const parseTweet = async (tweet) => {
 		const { extended_entities: extendedEntities } = tweetObject;
 		const media = extendedEntities?.media;
 		if (media) {
-			const mediaData = media.map(({ type, media_url_https: url }) => {
-				if (type === "photo") {
-					const originalUrl = url.replace(/\.jpg$/, "");
-					return { type, url: `${originalUrl}?format=jpg&name=orig` };
-				}
-
-				return { type, url };
-			});
-
+			const mediaData = media.map(({ type, media_url_https: url }) => ({ type, url }));
 			tweetData.media = mediaData;
 		}
 	}
