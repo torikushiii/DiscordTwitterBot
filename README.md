@@ -71,5 +71,5 @@ Default prefix is "`-`".
 
 # Limitations
 Since this bot is using guest authentication, There are some limitations:
-- R18 tweets will sometimes not fetched due how guest authentication works.
+- ~~R18 tweets will sometimes not fetched due how guest authentication works.~~
 - ~~I don't know how will this bot handle fetching tweets from 100+ users.~~
