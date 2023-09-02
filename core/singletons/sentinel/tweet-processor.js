@@ -18,8 +18,9 @@ const parseTweet = async (tweet) => {
 		if (media) {
 			const mediaData = media.map(({ type, media_url_https: url }) => {
 				if (type === "photo") {
-					const originalUrl = url.replace(/\.jpg$/, "");
-					return { type, url: `${originalUrl}?format=jpg&name=orig` };
+					const isJpg = url.endsWith(".jpg");
+					const originalUrl = url.replace(/\.(jpg|png)$/, "");
+					return { type, url: `${originalUrl}?format=${isJpg ? "jpg" : "png"}&name=orig` };
 				}
 
 				return { type, url };
@@ -33,13 +34,14 @@ const parseTweet = async (tweet) => {
 		tweetData.type = "retweet";
 	}
 	else if (tweetObject.is_quote_status && tweet.quoted_status) {
-		const { extended_entities: extendedEntities } = tweetObject.quoted_status;
+		const { extended_entities: extendedEntities } = tweetObject;
 		const media = extendedEntities?.media;
 		if (media) {
 			const mediaData = media.map(({ type, media_url_https: url }) => {
 				if (type === "photo") {
-					const originalUrl = url.replace(/\.jpg$/, "");
-					return { type, url: `${originalUrl}?format=jpg&name=orig` };
+					const isJpg = url.endsWith(".jpg");
+					const originalUrl = url.replace(/\.(jpg|png)$/, "");
+					return { type, url: `${originalUrl}?format=${isJpg ? "jpg" : "png"}&name=orig` };
 				}
 
 				return { type, url };
@@ -61,8 +63,9 @@ const parseTweet = async (tweet) => {
 		if (media) {
 			const mediaData = media.map(({ type, media_url_https: url }) => {
 				if (type === "photo") {
-					const originalUrl = url.replace(/\.jpg$/, "");
-					return { type, url: `${originalUrl}?format=jpg&name=orig` };
+					const isJpg = url.endsWith(".jpg");
+					const originalUrl = url.replace(/\.(jpg|png)$/, "");
+					return { type, url: `${originalUrl}?format=${isJpg ? "jpg" : "png"}&name=orig` };
 				}
 
 				return { type, url };
