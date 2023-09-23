@@ -364,7 +364,8 @@ module.exports = class Command extends require("./template.js") {
 				invocation: identifier,
 				channel: channelData?.id ?? null,
 				platform: options.platform.id,
-				params: context.params ?? {}
+				params: context.params ?? {},
+				args: argumentArray
 			};
 
 			if (e instanceof app.Error.GenericRequest) {
