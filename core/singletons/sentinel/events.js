@@ -37,6 +37,11 @@ events.on("new-tweet", async (tweetData) => {
 
 			const { username, name, avatar } = userData;
 			const text = `New tweet from ${username}: https://twitter.com/${username}/status/${parsedTweet.id}`;
+
+			const description = (parsedTweet?.media?.[0]?.type === "video")
+				? `${parsedTweet.text}\n${parsedTweet.media.map(({ media }, i) => `⏵ [[${i + 1}]](${media})`).join("\n")}`
+				: parsedTweet.text;
+
 			const embeds = [
 				{
 					color: 0x0099FF,
@@ -45,7 +50,7 @@ events.on("new-tweet", async (tweetData) => {
 						icon_url: avatar
 					},
 					url: "https://twitter.com/",
-					description: parsedTweet.text,
+					description,
 					timestamp: new Date(parsedTweet.createdAt),
 					footer: {
 						text: "Twitter",
