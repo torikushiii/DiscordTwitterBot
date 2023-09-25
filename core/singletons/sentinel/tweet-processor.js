@@ -99,10 +99,9 @@ const parseTweet = async (tweet) => {
 						return { type, url };
 					}
 
-					const variant = variants.find(({ content_type }) => content_type === "video/mp4");
-					if (!variant) {
-						return { type, url };
-					}
+					const variant = variants
+						.filter(({ content_type }) => content_type === "video/mp4")
+						.sort((a, b) => b.bitrate - a.bitrate)[0];
 					
 					return { type, url, media: variant.url };
 				}
