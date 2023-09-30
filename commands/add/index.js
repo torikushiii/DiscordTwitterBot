@@ -1,5 +1,6 @@
 module.exports = {
 	name: "add",
+	aliases: null,
 	params: [
 		{ name: "channel", type: "string" }
 	],

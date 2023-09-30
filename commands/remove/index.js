@@ -1,5 +1,6 @@
 module.exports = {
 	name: "remove",
+	aliases: null,
 	params: [],
 	description: "Remove a user from the timeline fetcher.",
 	code: (async function remove (context, ...args) {

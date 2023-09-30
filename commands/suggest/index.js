@@ -1,5 +1,6 @@
 module.exports = {
 	name: "suggest",
+	aliases: null,
 	params: [],
 	description: "Suggest a feature for the bot or report a bug.",
 	code: (async function suggest (context, ...args) {

@@ -1,5 +1,6 @@
 module.exports = {
 	name: "list",
+	aliases: null,
 	params: [],
 	description: "List all currently active subscriptions for this server.",
 	code: (async function list (context) {

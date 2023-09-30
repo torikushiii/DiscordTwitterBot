@@ -1,5 +1,6 @@
 module.exports = {
 	name: "help",
+	aliases: null,
 	params: [],
 	description: "Show this help message or get help for a specific command.",
 	code: (async function help (context, identifier) {
