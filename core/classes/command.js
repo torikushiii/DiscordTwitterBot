@@ -3,11 +3,13 @@ const { GuildChannel, PermissionFlagsBits } = require("discord.js");
 
 module.exports = class Command extends require("./template.js") {
 	name;
+	aliases = [];
 	description = null;
 	params = [];
 	code;
 
 	data = {};
+	staticData = {};
 
 	static delimiter = "--";
 
@@ -18,6 +20,29 @@ module.exports = class Command extends require("./template.js") {
 		if (typeof this.name !== "string" || this.name.length === 0) {
 			console.error("Command name must be a string and not empty", this.name);
 			this.name = "";
+		}
+
+		if (data.aliases === null) {
+			this.aliases = [];
+		}
+		else if (typeof data.aliases === "string") {
+			try {
+				this.aliases = JSON.parse(data.aliases);
+			}
+			catch (e) {
+				this.aliases = [];
+				console.warn(`Command has invalid JSON aliases definition`, {
+					commandName: this.name,
+					error: e
+				});
+			}
+		}
+		else if (Array.isArray(data.aliases) && data.aliases.every(i => typeof i === "string")) {
+			this.aliases = [...data.aliases];
+		}
+		else {
+			this.aliases = [];
+			console.warn(`Command has invalid aliases definition`, { data });
 		}
 
 		this.description = data.description;
@@ -54,6 +79,40 @@ module.exports = class Command extends require("./template.js") {
 			}
 
 			this.params = params;
+		}
+
+		if (data.staticData) {
+			let staticDataFunction;
+
+			if (typeof data.staticData === "function") {
+				staticDataFunction = data.staticData;
+			}
+			else {
+				try {
+					staticDataFunction = eval(data.staticData);
+				}
+				catch (e) {
+					console.warn(`Failed to compile static data for ${this.name}`, e);
+					this.code = () => ({
+						success: false,
+						reply: "Failed to compile static data"
+					});
+				}
+			}
+
+			if (typeof staticDataFunction !== "function") {
+				console.warn(`Invalid static data for ${this.name}`);
+				return;
+			}
+
+			const staticData = staticDataFunction(this);
+			if (!staticData || staticData?.constructor !== Object) {
+				console.warn(`Invalid static data for ${this.name}`);
+				return;
+			}
+			else {
+				this.staticData = staticData;
+			}
 		}
 
 		if (data?.usage?.length !== 0) {
@@ -267,7 +326,7 @@ module.exports = class Command extends require("./template.js") {
 			return name;
 		}
 		else if (typeof name === "string") {
-			return Command.data.find(i => i.name === name);
+			return Command.data.find(i => i.name === name || i.aliases.includes(name));
 		}
 		else {
 			throw new app.Error({
@@ -405,13 +464,6 @@ module.exports = class Command extends require("./template.js") {
 					success: false,
 					reason: "generic-request-error",
 					reply: `Third party service ${hostname} failed! 🚨 (ID ${errorID})`
-				};
-			}
-			else if (e instanceof app.Got.RequestError) {
-				execution = {
-					success: false,
-					reason: "got-error",
-					reply: `Third party service failed! 🚨 (ID ${errorID})`
 				};
 			}
 			else {
