@@ -70,5 +70,16 @@ module.exports = {
 		if (target.parameter === "arguments") {
 			return await target[invocation](context, ...args);
 		}
-	})
+	}),
+	usage: [
+		{
+			color: 0x00FF00,
+			title: "Set",
+			description: "Set a variable."
+			+ "\n\nUsage: `set <type> <arguments>`"
+			+ "\n{prefix}set prefix !"
+			+ "\n{prefix}unset prefix (reset to default)",
+			timestamp: new Date()
+		}
+	]
 };
