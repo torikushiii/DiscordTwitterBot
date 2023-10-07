@@ -66,8 +66,9 @@ Default prefix is "`-`".
 - `{prefix}suggest <text>` - Suggests a feature or report a bug/error
     - `{prefix}suggest unset <id>` - Unsets a suggestion
 - `{prefix}list` - Lists all users that are currently being streamed on the server
-- `{prefix}prefix` - Shows the current prefix
-    - `${prefix}prefix <new_prefix>` - Changes the prefix
+- `{prefix}set` - Set server various variables
+    - `${prefix}set prefix <prefix>` - Sets the server prefix
+    - `${prefix}unset prefix` - Resets the server prefix to the default prefix
 
 # Limitations
 Since this bot is using guest authentication, There are some limitations:
