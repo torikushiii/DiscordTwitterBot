@@ -71,8 +71,7 @@ module.exports = class TimelineFetcher {
 			throwHttpErrors: false,
 			headers: {
 				"X-Twitter-Active-User": "yes",
-				Referer: `https://twitter.com/`,
-				Cookie: app.Config.get("COOKIE")
+				Referer: `https://twitter.com/`
 			}
 		});
 

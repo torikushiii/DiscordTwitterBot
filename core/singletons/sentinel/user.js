@@ -12,9 +12,9 @@ module.exports = class User {
 		const res = await app.Got({
 			url: `https://syndication.twitter.com/srv/timeline-profile/screen-name/${this.#user}`,
 			responseType: "text",
+			throwHttpErrors: false,
 			headers: {
-				Referer: `https://twitter.com/`,
-				Cookie: app.Config.get("COOKIE")
+				Referer: `https://twitter.com/`
 			}
 		});
 
