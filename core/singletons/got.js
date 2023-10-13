@@ -1,5 +1,8 @@
 module.exports = (async () => {
 	const gotModule = await import("got");
+	const Auth = require("./sentinel/auth.js");
+	const cookie = await Auth.cookie();
+
 	const got = gotModule.default.extend({
 		responseType: "json",
 		http2: true,
@@ -12,13 +15,9 @@ module.exports = (async () => {
 		mutableDefaults: true,
 		throwHttpErrors: true,
 		headers: {
-			"User-Agent": "TwitterAndroid/9.95.0-release.0 (29950000-r-0) ONEPLUS+A3010/9 (OnePlus;ONEPLUS+A3010;OnePlus;OnePlus3;0;;1;2016)",
-			"X-Twitter-API-Version": 5,
-			"X-Twitter-Client": "TwitterAndroid",
-			"X-Twitter-Client-Version": "9.95.0-release.0",
-			"OS-Version": "28",
-			"System-User-Agent": "Dalvik/2.1.0 (Linux; U; Android 9; ONEPLUS A3010 Build/PKQ1.181203.001)",
-			"X-Twitter-Active-User": "yes"
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
+			"X-Twitter-Active-User": "yes",
+			Cookie: cookie
 		},
 		hooks: {
 			beforeError: [
