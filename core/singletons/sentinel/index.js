@@ -10,7 +10,7 @@ module.exports = class SentinelSingleton extends Template {
 	#firstRun = true;
 	#ignoreList = [];
 
-	ignoreListExpiration = 300_000;
+	ignoreListExpiration = 3_600_000;
 	// eslint-disable-next-line no-return-assign
 	ignoredListExpirationInterval = setInterval(() => this.#ignoreList = [], this.ignoreListExpiration);
 	
@@ -38,7 +38,7 @@ module.exports = class SentinelSingleton extends Template {
 				fn: this.removeInactiveChannels.bind(this)
 			},
 			{
-				time: "*/15 * * * *",
+				time: "*/5 * * * *",
 				fn: this.checkForMissingChannels.bind(this)
 			}
 		];
@@ -214,18 +214,13 @@ module.exports = class SentinelSingleton extends Template {
 					continue;
 				}
 
-				if (userData.success === false && userData.error.code === "USER_UNAVAILABLE") {
+				if (userData.success === false && userData.error.code === "USER_SUSPENDED") {
 					app.Logger.warn("SentinelModule", `${channel} ${userData.error.message}`);
 					this.#ignoreList.push(channel.toLowerCase());
 					continue;
 				}
-
-				if (!userData.data) {
-					if (userData.error.code === "RATE_LIMITED") {
-						continue;
-					}
-					
-					app.Logger.warn("SentinelModule", `No data returned for ${channel}, ignoring`, userData);
+				else if (userData.success === false && userData.error.code === "UNKNOWN_ERROR") {
+					app.Logger.warn("SentinelModule", `${channel} ${userData.error.message}`);
 					this.#ignoreList.push(channel.toLowerCase());
 					continue;
 				}
@@ -283,18 +278,14 @@ module.exports = class SentinelSingleton extends Template {
 			let userData = await app.User.get(channel);
 			if (!userData) {
 				userData = await this.fetchUser(channel);
-				if (userData.success === false && userData?.error) {
-					app.Logger.warn("SentinelModule", `${channel} ${JSON.stringify(userData.error)}`);
-					this.#ignoreList.push(channel.toLowerCase());
-					continue;
-				}
 				if (userData.success === false && userData?.error?.code === "NO_USER_FOUND") {
 					this.#ignoreList.push(channel.toLowerCase());
 					continue;
 				}
 			}
 
-			if (!userData) {
+			if (userData?.success === false) {
+				this.#ignoreList.push(channel.toLowerCase());
 				continue;
 			}
 
