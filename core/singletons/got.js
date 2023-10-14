@@ -1,7 +1,5 @@
 module.exports = (async () => {
 	const gotModule = await import("got");
-	const Auth = require("./sentinel/auth.js");
-	const cookie = await Auth.cookie();
 
 	const got = gotModule.default.extend({
 		responseType: "json",
@@ -16,8 +14,7 @@ module.exports = (async () => {
 		throwHttpErrors: true,
 		headers: {
 			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
-			"X-Twitter-Active-User": "yes",
-			Cookie: cookie
+			"X-Twitter-Active-User": "yes"
 		},
 		hooks: {
 			beforeError: [
