@@ -16,28 +16,7 @@ const parseTweet = async (tweet) => {
 		const { extended_entities: extendedEntities } = retweetData;
 		const media = extendedEntities?.media;
 		if (media) {
-			const mediaData = media.map(({ type, media_url_https: url, video_info }) => {
-				if (type === "photo") {
-					const isJpg = url.endsWith(".jpg");
-					const originalUrl = url.replace(/\.(jpg|png)$/, "");
-					return { type, url: `${originalUrl}?format=${isJpg ? "jpg" : "png"}&name=orig` };
-				}
-				else if (type === "video") {
-					const { variants } = video_info;
-					if (variants.length === 0) {
-						return { type, url };
-					}
-
-					const variant = variants.find(({ content_type }) => content_type === "video/mp4");
-					if (!variant) {
-						return { type, url };
-					}
-					
-					return { type, url, media: variant.url };
-				}
-
-				return { type, url };
-			});
+			const mediaData = getTweetMedia(media);
 
 			tweetData.media = mediaData;
 		}
@@ -50,28 +29,7 @@ const parseTweet = async (tweet) => {
 		const { extended_entities: extendedEntities } = tweetObject;
 		const media = extendedEntities?.media;
 		if (media) {
-			const mediaData = media.map(({ type, media_url_https: url, video_info }) => {
-				if (type === "photo") {
-					const isJpg = url.endsWith(".jpg");
-					const originalUrl = url.replace(/\.(jpg|png)$/, "");
-					return { type, url: `${originalUrl}?format=${isJpg ? "jpg" : "png"}&name=orig` };
-				}
-				else if (type === "video") {
-					const { variants } = video_info;
-					if (variants.length === 0) {
-						return { type, url };
-					}
-
-					const variant = variants.find(({ content_type }) => content_type === "video/mp4");
-					if (!variant) {
-						return { type, url };
-					}
-					
-					return { type, url, media: variant.url };
-				}
-
-				return { type, url };
-			});
+			const mediaData = getTweetMedia(media);
 
 			tweetData.media = mediaData;
 		}
@@ -87,33 +45,39 @@ const parseTweet = async (tweet) => {
 		const { extended_entities: extendedEntities } = tweetObject;
 		const media = extendedEntities?.media;
 		if (media) {
-			const mediaData = media.map(({ type, media_url_https: url, video_info }) => {
-				if (type === "photo") {
-					const isJpg = url.endsWith(".jpg");
-					const originalUrl = url.replace(/\.(jpg|png)$/, "");
-					return { type, url: `${originalUrl}?format=${isJpg ? "jpg" : "png"}&name=orig` };
-				}
-				else if (type === "video") {
-					const { variants } = video_info;
-					if (variants.length === 0) {
-						return { type, url };
-					}
-
-					const variant = variants
-						.filter(({ content_type }) => content_type === "video/mp4")
-						.sort((a, b) => b.bitrate - a.bitrate)[0];
-					
-					return { type, url, media: variant.url };
-				}
-
-				return { type, url };
-			});
+			const mediaData = getTweetMedia(media);
 			
 			tweetData.media = mediaData;
 		}
 	}
 
 	return tweetData;
+};
+
+const getTweetMedia = (media) => {
+	const mediaData = media.map(({ type, media_url_https: url, video_info }) => {
+		if (type === "photo") {
+			const isJpg = url.endsWith(".jpg");
+			const originalUrl = url.replace(/\.(jpg|png)$/, "");
+			return { type, url: `${originalUrl}?format=${isJpg ? "jpg" : "png"}&name=orig` };
+		}
+		else if (type === "video") {
+			const { variants } = video_info;
+			if (variants.length === 0) {
+				return { type, url };
+			}
+
+			const variant = variants
+				.filter(({ content_type }) => content_type === "video/mp4")
+				.sort((a, b) => b.bitrate - a.bitrate)[0];
+			
+			return { type, url, media: variant.url };
+		}
+
+		return { type, url };
+	});
+
+	return mediaData;
 };
 
 module.exports = parseTweet;
