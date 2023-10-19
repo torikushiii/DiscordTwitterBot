@@ -68,6 +68,10 @@ module.exports = {
 					errors.push(user);
 					continue;
 				}
+				else if (!data?.success && data?.error?.code === "USER_SUSPENDED") {
+					errors.push(user);
+					continue;
+				}
 				else if (data.private) {
 					privateUser.push(user);
 					continue;
@@ -116,7 +120,7 @@ module.exports = {
 		}
 
 		if (errors.length !== 0) {
-			reply += `Skipped ${errors.length} user(s) because they do not exist: ${errors.join(", ")}\n`;
+			reply += `Skipped ${errors.length} user(s) because they do not exist/suspended: ${errors.join(", ")}\n`;
 		}
 
 		if (privateUser.length !== 0) {
