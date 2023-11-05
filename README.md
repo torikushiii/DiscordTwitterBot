@@ -69,8 +69,12 @@ Default prefix is "`-`".
 - `{prefix}set` - Set server various variables
     - `${prefix}set prefix <prefix>` - Sets the server prefix
     - `${prefix}unset prefix` - Resets the server prefix to the default prefix
+    - `{prefix}set message <message>` - Sets a custom message for when new tweets are posted
+    - `{prefix}unset message` - Resets the custom message to the default message
 
 # Limitations
-Since this bot is using guest authentication, There are some limitations:
+None for now.
+
+~~Since this bot is using guest authentication, There are some limitations:~~
 - ~~R18 tweets will sometimes not fetched due how guest authentication works.~~
 - ~~I don't know how will this bot handle fetching tweets from 100+ users.~~

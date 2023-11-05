@@ -45,6 +45,40 @@ module.exports = {
 						reply: `The prefix has been reset to "-".`
 					};
 				}
+			},
+			{
+				name: "message",
+				aliases: [],
+				parameter: "arguments",
+				description: "Set custom message when new Tweets are posted.",
+				set: async (context, ...text) => {
+					const message = text.join(" ");
+					if (!message) {
+						return {
+							success: false,
+							reply: "No custom message specified."
+						};
+					}
+					
+					const guildData = await app.Cache.getByPrefix(`discord-guilds-${context.channel.guild.id}`);
+					guildData.customMessage = message;
+					
+					await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildData, { expiry: 0 });
+
+					return {
+						reply: `The custom message has been changed successfully for new Tweets.`
+					};
+				},
+				unset: async (context) => {
+					const guildData = await app.Cache.getByPrefix(`discord-guilds-${context.channel.guild.id}`);
+					guildData.customMessage = null;
+					
+					await app.Cache.setByPrefix(`discord-guilds-${context.channel.guild.id}`, guildData, { expiry: 0 });
+
+					return {
+						reply: `The custom message has been reset successfully for new Tweets.`
+					};
+				}
 			}
 		]
 	})),
@@ -78,7 +112,10 @@ module.exports = {
 			description: "Set a variable."
 			+ "\n\nUsage: `set <type> <arguments>`"
 			+ "\n{prefix}set prefix !"
-			+ "\n{prefix}unset prefix (reset to default)",
+			+ "\n{prefix}unset prefix (reset to default)"
+			+ "\n\n{prefix}set message <your custom message> (set custom message when for new Tweets posted)"
+			+ "\n{prefix}set message check out this tweet @customrole"
+			+ "\n{prefix}unset message (reset to default)",
 			timestamp: new Date()
 		}
 	]

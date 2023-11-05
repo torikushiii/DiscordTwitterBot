@@ -14,7 +14,7 @@ events.on("new-tweet", async (tweetData) => {
 	const userId = tweetData.user.id_str;
 	for (const guild of guilds) {
 		const guildData = await app.Cache.getByPrefix(guild);
-		const { channels } = guildData;
+		const { channels, customMessage } = guildData;
 		if (channels.length === 0) {
 			continue;
 		}
@@ -36,7 +36,11 @@ events.on("new-tweet", async (tweetData) => {
 			}
 
 			const { username, name, avatar } = userData;
-			const text = `New tweet from ${username}: https://twitter.com/${username}/status/${parsedTweet.id}`;
+			let text = `New tweet from ${username}: https://twitter.com/${username}/status/${parsedTweet.id}`;
+
+			if (customMessage && customMessage !== null) {
+				text = customMessage;
+			}
 
 			const description = (parsedTweet?.media?.[0]?.type === "video")
 				? `${parsedTweet.text}\n${parsedTweet.media.map(({ media }, i) => `⏵ [[${i + 1}]](${media})`).join("\n")}`
