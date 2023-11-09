@@ -39,7 +39,7 @@ events.on("new-tweet", async (tweetData) => {
 			let text = `New tweet from ${username}: https://twitter.com/${username}/status/${parsedTweet.id}`;
 
 			if (customMessage && customMessage !== null) {
-				text = customMessage;
+				text = `${customMessage}: https://twitter.com/${username}/status/${parsedTweet.id}`;
 			}
 
 			const description = (parsedTweet?.media?.[0]?.type === "video")
