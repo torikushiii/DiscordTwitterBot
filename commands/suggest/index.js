@@ -2,41 +2,8 @@ module.exports = {
 	name: "suggest",
 	aliases: null,
 	params: [],
-	description: "Suggest a feature for the bot or report a bug.",
+	description: "Suggest a feature for the bot or report a bug. If you're suggesting a feature, you will be notified when it's implemented. To unset a suggestion, use `unset suggestion <id>`",
 	code: (async function suggest (context, ...args) {
-		if (args[0] === "unset") {
-			const id = parseInt(args[1]);
-			if (isNaN(id)) {
-				return {
-					success: false,
-					reply: "Invalid suggestion ID."
-				};
-			}
-
-			const suggestion = await app.Query.collection("suggestions").findOne({ id });
-			if (!suggestion) {
-				return {
-					success: false,
-					reply: "Suggestion not found."
-				};
-			}
-
-			if (suggestion.user.id !== context.user.id) {
-				return {
-					success: false,
-					reply: "You can only unset your own suggestions."
-				};
-			}
-
-			await app.Query.collection("suggestions").updateOne({ id }, { $set: { status: "unset" } });
-
-			const reply = `Suggestion unset (ID: ${id}).`;
-			return {
-				success: true,
-				reply
-			};
-		}
-
 		if (args.length === 0) {
 			return {
 				success: false,
@@ -45,19 +12,20 @@ module.exports = {
 		}
 
 		const text = args.join(" ");
-        
 		const id = await app.Query.collection("suggestions").countDocuments() + 1;
 		await app.Query.collection("suggestions").insertOne({
 			id,
 			text,
 			status: "pending",
+			fired: false,
+			authorNote: null,
 			user: {
 				id: context.user.id,
 				username: context.user.username
 			}
 		});
 
-		const reply = `Suggestion saved and will be processed (ID: ${id}).`;
+		const reply = `Suggestion saved and eventually will be processed (ID: ${id}).`;
 		return {
 			success: true,
 			reply
@@ -69,8 +37,7 @@ module.exports = {
 			title: "Suggest",
 			description: "Suggest a feature for the bot or report a bug."
 				+ "\n\n**Usage:**"
-				+ "\n`suggest <text>`"
-				+ "\n`suggest unset <id>`",
+				+ "\n`suggest <text>`",
 			timestamp: new Date()
 		}
 	]

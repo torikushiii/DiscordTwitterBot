@@ -79,6 +79,48 @@ module.exports = {
 						reply: `The custom message has been reset successfully for new Tweets.`
 					};
 				}
+			},
+			{
+				name: "suggestion",
+				aliases: ["suggest", "suggestions"],
+				parameter: "ID",
+				description: "Dismiss your suggestion.",
+				set: () => ({
+					success: false,
+					reply: "You cannot set a suggestion using this command."
+				}),
+				unset: async (context, ID) => {
+					const id = parseInt(ID);
+					if (isNaN(id)) {
+						return {
+							success: false,
+							reply: "Invalid suggestion ID."
+						};
+					}
+
+					const suggestion = await app.Query.collection("suggestions").findOne({ id });
+					if (!suggestion) {
+						return {
+							success: false,
+							reply: "Suggestion not found."
+						};
+					}
+
+					if (suggestion.user.id !== context.user.id) {
+						return {
+							success: false,
+							reply: "You can only unset your own suggestions."
+						};
+					}
+
+					await app.Query.collection("suggestions").updateOne({ id }, { $set: { status: "unset" } });
+
+					const reply = `Suggestion ID ${id} has been dismissed.`;
+					return {
+						success: true,
+						reply
+					};
+				}
 			}
 		]
 	})),
