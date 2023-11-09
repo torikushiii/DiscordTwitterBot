@@ -9,6 +9,7 @@ const channelList = require("../../../channels.json");
 module.exports = class SentinelSingleton extends Template {
 	#firstRun = true;
 	#ignoreList = [];
+	#restartRequested = false;
 
 	ignoreListExpiration = 3_600_000;
 	// eslint-disable-next-line no-return-assign
@@ -40,6 +41,14 @@ module.exports = class SentinelSingleton extends Template {
 			{
 				time: "*/5 * * * *",
 				fn: this.checkForMissingChannels.bind(this)
+			},
+			{
+				time: "* * * * *",
+				fn: this.restart.bind(this)
+			},
+			{
+				time: "*/30 * * * * *",
+				fn: this.suggestionNotification.bind(this)
 			}
 		];
 
@@ -143,6 +152,7 @@ module.exports = class SentinelSingleton extends Template {
 		}
 
 		app.Logger.info("SentinelModule", `Adding ${newChannels.length} new channels.`);
+		this.#restartRequested = true;
 
 		await app.Cache.setByPrefix(
 			"twitter-channels",
@@ -242,6 +252,50 @@ module.exports = class SentinelSingleton extends Template {
 		}
 
 		return users;
+	}
+
+	async restart () {
+		if (!this.#restartRequested) {
+			return;
+		}
+
+		const { promisify } = require("util");
+		const shell = promisify(require("child_process").exec);
+
+		const pm2 = app.Config.get("PM2_NAME");
+		await shell(`pm2 restart ${pm2}`);
+	}
+
+	async suggestionNotification () {
+		const subscriptions = await app.Query.collection("suggestions")
+			.find({ status: "completed", fired: false })
+			.toArray();
+
+		if (subscriptions.length === 0) {
+			return;
+		}
+
+		for (const subscription of subscriptions) {
+			const { user, authorNote } = subscription;
+			const userId = user.id;
+
+			const baseText = "Your suggestion has been completed";
+			const note = (authorNote) ? `${baseText}.\n\n${authorNote}` : `${baseText}.`;
+
+			const embeds = [
+				{
+					title: "Suggestion Completed",
+					description: note,
+					color: 0x00FF00
+				}
+			];
+
+			await app.Query.collection("suggestions").updateOne({ _id: subscription._id }, { $set: { fired: true } });
+
+			app.Logger.info("SentinelModule", `Sending suggestion notification to ${userId}`);
+			const userData = await app.Discord.client.users.fetch(userId);
+			await userData.send({ embeds });
+		}
 	}
 
 	async checkForMissingChannels () {
