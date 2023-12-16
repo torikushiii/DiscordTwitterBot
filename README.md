@@ -57,6 +57,8 @@ $ npm start / node index.js
 ```
 
 # Usage
+*If new users are added to the streaming list, it will take a while for the bot to start sending new tweets.*
+
 Default prefix is "`-`".
 - `{prefix}add <username>` - Adds a user to the streaming list
     - `${prefix}add <username#1> <username#2>` - Adds multiple users to the streaming list
