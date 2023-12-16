@@ -6,6 +6,9 @@
 	const commands = await require("./commands/index.js");
 	await app.Command.importData(commands.definitions);
 
+	const { initialize } = require("./crons/index.js");
+	initialize();
+
 	let Controller = null;
 	try {
 		Controller = require("./controller/discord.js");
