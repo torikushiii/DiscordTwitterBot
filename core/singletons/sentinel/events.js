@@ -75,8 +75,29 @@ events.on("new-tweet", async (tweetData) => {
 					})));
 				}
 			}
-				
+
+			events.emit("save-tweet", { tweetData, parsedTweet });
 			await app.Discord.send(text, { id: channel.channelId }, { embeds });
 		}
 	}
+});
+
+events.on("save-tweet", async ({ tweetData, parsedTweet }) => {
+	const tweetObject = {
+		id: parsedTweet.id,
+		raw: tweetData,
+		parsed: parsedTweet
+	};
+
+	const ops = await app.Query.collection("tweets").updateOne(
+		{ id: tweetObject.id },
+		{ $set: tweetObject },
+		{ upsert: true }
+	);
+
+	if (ops.acknowledged !== true) {
+		app.Logger.error("EventManager", `Failed to save tweet ${tweetObject.id} ${JSON.stringify(ops)}`);
+	}
+
+	return ops;
 });
