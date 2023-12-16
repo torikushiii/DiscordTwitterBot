@@ -22,26 +22,33 @@ module.exports = class TimelineFetcher {
 			await this.getUserPriority();
 		}
 
-		const batchSize = Math.ceil(this.#userList.length / 10);
+		const batchSize = Math.ceil(this.#userList.length / 20);
 		const request = [];
 		const userArray = [...this.#userList];
+		const timelineEntriesMap = new Map();
+
 		while (userArray.length) {
 			const batch = userArray.splice(0, batchSize);
 			const batchRequest = batch.map(i => this.fetchTimeline(i.username));
-			request.push(Promise.all(batchRequest));
+			request.push(Promise.allSettled(batchRequest));
 		}
 
 		const response = await Promise.all(request);
-		const timelineEntries = response
-			.flat()
-			.filter(i => i.success)
-			.flatMap(i => i.entries);
+		for (const batchResponse of response) {
+			for (const userResponse of batchResponse) {
+				if (userResponse.status === "fulfilled" && userResponse.value.success) {
+					const entries = userResponse.value.entries;
+					for (const entry of entries) {
+						const userId = entry.user.id_str;
+						const userEntries = timelineEntriesMap.get(userId) || [];
+						userEntries.push(entry);
+						timelineEntriesMap.set(userId, userEntries);
+					}
+				}
+			}
+		}
 
-		const userTimelines = this.#userList.map(i => {
-			const userTimeline = timelineEntries.filter(entry => entry.user.id_str === i.id);
-			return userTimeline;
-		});
-
+		const userTimelines = this.#userList.map(i => timelineEntriesMap.get(i.id) || []);
 		return userTimelines;
 	}
 
@@ -50,17 +57,19 @@ module.exports = class TimelineFetcher {
 			throw new app.Error({ message: "No users found" });
 		}
 
-		const priority = [];
-		for (const user of this.#userList) {
+		const fetchTimelineData = async (user) => {
 			const timelineData = await app.Cache.get(`twitter-timeline-${user.id}`);
-			if (timelineData) {
-				priority.push({
+			return timelineData
+				? {
 					id: user.id,
 					username: user.username,
 					count: timelineData.length
-				});
-			}
-		}
+				}
+				: null;
+		};
+
+		const timelineDataPromises = this.#userList.map(fetchTimelineData);
+		const priority = (await Promise.all(timelineDataPromises)).filter(Boolean);
 
 		priority.sort((a, b) => b.count - a.count);
 		this.#userList = priority;
