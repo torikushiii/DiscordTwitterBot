@@ -24,8 +24,8 @@ module.exports = class User {
 	}
 
 	async getUserData () {
-		const { cookie, authorization, csrf } = await Auth.cookie();
-
+		const headers = await Auth.get("user");
+		
 		const variables = encodeURIComponent(JSON.stringify({ screen_name: this.#user }));
 		const features = encodeURIComponent(JSON.stringify(User.gqlFeatures));
 
@@ -33,13 +33,7 @@ module.exports = class User {
 			url: `https://twitter.com/i/api/graphql/G3KGOASz96M-Qu0nwmGXNg/UserByScreenName?variables=${variables}&features=${features}`,
 			responseType: "json",
 			throwHttpErrors: false,
-			headers: {
-				Authorization: authorization,
-				"X-Twitter-Active-User": "yes",
-				Referer: `https://twitter.com/`,
-				"X-Csrf-Token": csrf,
-				Cookie: cookie
-			}
+			headers
 		});
 
 		if (res.statusCode !== 200) {

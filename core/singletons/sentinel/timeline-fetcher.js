@@ -4,20 +4,13 @@ module.exports = class TimelineFetcher {
 	#userList = [];
 
 	constructor (userList) {
-		this.#userList = userList;
-		if (this.#userList.length === 0) {
-			throw new app.Error({ message: "No users were provided" });
+		if (!Array.isArray(userList) || userList.length === 0) {
+			throw new app.Error({ message: "User list must be an array and not empty" });
 		}
+		this.#userList = userList;
 	}
 
 	async fetch (options = {}) {
-		if (this.#userList.length === 0) {
-			throw new app.Error({ message: "No users found" });
-		}
-		else if (!Array.isArray(this.#userList)) {
-			throw new app.Error({ message: "User list must be an array" });
-		}
-
 		if (!options.firstRun) {
 			await this.getUserPriority();
 		}
@@ -53,10 +46,6 @@ module.exports = class TimelineFetcher {
 	}
 
 	async getUserPriority () {
-		if (this.#userList.length === 0) {
-			throw new app.Error({ message: "No users found" });
-		}
-
 		const fetchTimelineData = async (user) => {
 			const timelineData = await app.Cache.get(`twitter-timeline-${user.id}`);
 			return timelineData
@@ -69,23 +58,24 @@ module.exports = class TimelineFetcher {
 		};
 
 		const timelineDataPromises = this.#userList.map(fetchTimelineData);
-		const priority = (await Promise.all(timelineDataPromises)).filter(Boolean);
+		const priority = (await Promise.all(timelineDataPromises)).reduce((acc, cur) => {
+			if (cur) {
+				acc.push(cur);
+			}
+			return acc;
+		}, []);
 
 		priority.sort((a, b) => b.count - a.count);
 		this.#userList = priority;
 	}
 
 	async fetchTimeline (username) {
-		const { cookie } = await Auth.cookie();
+		const headers = await Auth.get("timeline");
 		const res = await app.Got({
 			url: `https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`,
 			responseType: "text",
 			throwHttpErrors: false,
-			headers: {
-				"X-Twitter-Active-User": "yes",
-				Referer: `https://twitter.com/`,
-				Cookie: cookie
-			}
+			headers
 		});
 
 		if (res.statusCode !== 200) {
@@ -105,10 +95,13 @@ module.exports = class TimelineFetcher {
 			return { success: false };
 		}
 
-		const entries = timeline
-			.map(i => i?.content?.tweet)
-			.filter(Boolean)
-			.filter(i => !i.quotedTweetTombstoneInfo);
+		const entries = timeline.reduce((acc, cur) => {
+			const tweet = cur?.content?.tweet;
+			if (tweet && !tweet.quotedTweetTombstoneInfo) {
+				acc.push(tweet);
+			}
+			return acc;
+		}, []);
 
 		return {
 			success: true,
