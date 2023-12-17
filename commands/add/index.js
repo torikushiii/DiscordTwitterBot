@@ -111,7 +111,7 @@ module.exports = {
 
 		let reply = "";
 		if (added.length !== 0) {
-			reply += `Added users to <#${announceChannel.id}>\n`;
+			reply += `Added users to <#${announceChannel.id}> (this may take a few minutes to take effect)\n`;
 			reply += `Added ${added.length} user(s) to the timeline fetcher: ${added.join(", ")}\n`;
 		}
 
