@@ -14,33 +14,32 @@ module.exports = class TimelineFetcher {
 		if (!options.firstRun) {
 			await this.getUserPriority();
 		}
-
+	
 		const batchSize = Math.ceil(this.#userList.length / 20);
 		const request = [];
-		const userArray = [...this.#userList];
+		const userArray = this.#userList.slice();
 		const timelineEntriesMap = new Map();
 
 		while (userArray.length) {
 			const batch = userArray.splice(0, batchSize);
 			const batchRequest = batch.map(i => this.fetchTimeline(i.username));
-			request.push(Promise.allSettled(batchRequest));
+			request.push(...batchRequest);
 		}
-
-		const response = await Promise.all(request);
-		for (const batchResponse of response) {
-			for (const userResponse of batchResponse) {
-				if (userResponse.status === "fulfilled" && userResponse.value.success) {
-					const entries = userResponse.value.entries;
-					for (const entry of entries) {
-						const userId = entry.user.id_str;
-						const userEntries = timelineEntriesMap.get(userId) || [];
-						userEntries.push(entry);
-						timelineEntriesMap.set(userId, userEntries);
-					}
+	
+		const response = await Promise.allSettled(request);
+	
+		await Promise.all(response.map(async (userResponse) => {
+			if (userResponse.status === "fulfilled" && userResponse.value.success) {
+				const entries = userResponse.value.entries;
+				for (const entry of entries) {
+					const userId = entry.user.id_str;
+					const userEntries = timelineEntriesMap.get(userId) || [];
+					userEntries.push(entry);
+					timelineEntriesMap.set(userId, userEntries);
 				}
 			}
-		}
-
+		}));
+	
 		const userTimelines = this.#userList.map(i => timelineEntriesMap.get(i.id) || []);
 		return userTimelines;
 	}
