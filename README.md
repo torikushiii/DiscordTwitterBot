@@ -18,9 +18,7 @@
 This is a working prototype of fetching "real-time" tweets since the new Twitter API is now a paid service. Expect to see some bugs, errors, and a lot of code that needs to be refactored.
 
 # Invite
-<a href="https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456"><img src="https://img.shields.io/static/v1?label=Invite%20Me&message=Twitter Bot%239462&plastic&color=5865F2&logo=discord"></a>
-
-If you want to try it out, you can add the bot to your server by clicking the badge or [here](https://discord.com/oauth2/authorize?client_id=951471857943597086&scope=bot&permissions=19456).
+Bot does not work and have not TBD, if you invited the bot using the invite link or if it's already in your server, it will automatically leave the server.
 
 # Features
 - Fetching almost real-time tweets from a user (approx. 5 seconds delay from the time the tweet was posted)
